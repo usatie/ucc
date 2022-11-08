@@ -11,7 +11,7 @@ clean:
 docker-test:
 	docker run --rm -v `pwd`:/ucc -w /ucc compilerbook make test
 
-docker-run:
+run:
 	docker run --rm -it -v `pwd`:/ucc -w /ucc compilerbook
 
-.PHONY: test clean docker-test docker-run
+.PHONY: test clean docker-test run
