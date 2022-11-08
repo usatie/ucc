@@ -1,8 +1,17 @@
-test:
-	echo "Hello World"
+CFLAGS=-std=c11 -g -static
+
+ucc: ucc.c
+
+test: ucc
+	bash -x test.sh
+
+clean:
+	rm -f ucc *.o *~ tmp*
 
 docker-test:
 	docker run --rm -v `pwd`:/ucc -w /ucc compilerbook make test
 
 docker-run:
 	docker run --rm -it -v `pwd`:/ucc -w /ucc compilerbook
+
+.PHONY: test clean docker-test docker-run
