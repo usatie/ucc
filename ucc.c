@@ -1,33 +1,32 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   ucc.c                                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/11/08 16:52:42 by susami            #+#    #+#             */
+/*   Updated: 2022/11/08 17:34:04 by susami           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include <ctype.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-typedef enum {
-	TK_RESERVED,
-	TK_NUM,
-	TK_EOF,
-} TokenKind;
-
-typedef struct Token Token;
-
-struct Token {
-	TokenKind kind;
-	Token *next;
-	int val;
-	char *str;
-};
+#include "ucc.h"
 
 Token	*token;
 char	*user_input;
 
-void	error_at(char *loc, char *fmt, ...) {
-	va_list	ap;
-	va_start(ap, fmt);
+void	error_at(char *loc, char *fmt, ...)
+{
+	va_list		ap;
+	const int	pos = loc - user_input;
 
-	int	pos = loc - user_input;
+	va_start(ap, fmt);
 	fprintf(stderr, "%s\n", user_input);
 	fprintf(stderr, "%*s", pos, " "); // print spaces for pos
 	fprintf(stderr, "^ ");
@@ -36,91 +35,104 @@ void	error_at(char *loc, char *fmt, ...) {
 	exit(1);
 }
 
-bool	consume(char op) {
+bool	consume(char op)
+{
 	if (token->kind != TK_RESERVED || token->str[0] != op)
-		return false;
+		return (false);
 	token = token->next;
-	return true;
+	return (true);
 }
 
-void	expect(char op) {
+void	expect(char op)
+{
 	if (token->kind != TK_RESERVED || token->str[0] != op)
 		error_at(token->str, "expected '%c', but not.", op);
 	token = token->next;
 }
 
-int	expect_number(void) {
+int	expect_number(void)
+{
+	const int	val = token->val;
+
 	if (token->kind != TK_NUM)
 		error_at(token->str, "expected number, but not.");
-	int val = token->val;
 	token = token->next;
-	return val;
+	return (val);
 }
 
-bool at_eof(void) {
-	return token->kind == TK_EOF;
+bool	at_eof(void)
+{
+	return (token->kind == TK_EOF);
 }
 
-Token	*new_token(TokenKind kind, Token *cur, char *str) {
-	Token *tok = calloc(1, sizeof(Token));
+Token	*new_token(TokenKind kind, Token *cur, char *str)
+{
+	Token	*tok;
+
+	tok = calloc(1, sizeof(Token));
 	tok->kind = kind;
 	tok->str = str;
 	cur->next = tok;
-	return tok;
+	return (tok);
 }
 
-Token *tokenize(char *p) {
-	Token head;
+Token	*tokenize(char *p)
+{
+	Token	head;
+	Token	*cur;
+
 	head.next = NULL;
-	Token *cur = &head;
-
-	while (*p) {
-		if (isspace(*p)) {
+	cur = &head;
+	while (*p)
+	{
+		if (isspace(*p))
+		{
 			p++;
-			continue;
+			continue ;
 		}
-
-		if (*p == '+' || *p == '-') {
+		if (*p == '+' || *p == '-')
+		{
 			cur = new_token(TK_RESERVED, cur, p++);
-			continue;
+			continue ;
 		}
-
-		if (isdigit(*p)) {
+		if (isdigit(*p))
+		{
 			cur = new_token(TK_NUM, cur, p);
 			cur->val = strtol(p, &p, 10);
-			continue;
+			continue ;
 		}
 		error_at(token->str, "Cannot tokenize.");
 	}
 	new_token(TK_EOF, cur, p);
-	return head.next;
+	return (head.next);
 }
 
-int	main(int argc, char *argv[]) {
-	if (argc != 2) {
+int	main(int argc, char *argv[])
+{
+	if (argc != 2)
+	{
 		fprintf(stderr, "Invalid number of args\n");
-		return 1;
+		return (1);
 	}
 
 	// tokenize
 	user_input = argv[1];
 	token = tokenize(argv[1]);
-
 	printf(".intel_syntax noprefix\n");
 	printf(".globl main\n");
 	printf("main:\n");
-
 	// The start of statements must be number
 	printf("  mov rax, %d\n", expect_number());
-
-	while (!at_eof()) {
-		if (consume('+')) {
+	while (!at_eof())
+	{
+		if (consume('+'))
+		{
 			printf("  add rax, %d\n", expect_number());
-			continue;
+			continue ;
 		}
 		expect('-');
 		printf("  sub rax, %d\n", expect_number());
 	}
 	printf("  ret\n");
-	return 0;
+	return (0);
 }
