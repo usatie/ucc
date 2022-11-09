@@ -1,6 +1,7 @@
-CFLAGS=-std=c11 -g -static
+CFLAGS=-std=c11 -g -static -I include
 
-ucc: ucc.c
+ucc: src/ucc.c
+	cc $(CFLAGS) -o ucc src/ucc.c
 
 test: ucc
 	bash -x test.sh

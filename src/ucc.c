@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:52:42 by susami            #+#    #+#             */
-/*   Updated: 2022/11/08 17:34:04 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/09 14:31:39 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,13 @@
 Token	*token;
 char	*user_input;
 
+// error.c
 void	error_at(char *loc, char *fmt, ...)
 {
 	va_list		ap;
 	const int	pos = loc - user_input;
 
+	printf("ERROR!\n");
 	va_start(ap, fmt);
 	fprintf(stderr, "%s\n", user_input);
 	fprintf(stderr, "%*s", pos, " "); // print spaces for pos
@@ -35,6 +37,7 @@ void	error_at(char *loc, char *fmt, ...)
 	exit(1);
 }
 
+// tokenizer.c
 bool	consume(char op)
 {
 	if (token->kind != TK_RESERVED || token->str[0] != op)
@@ -90,7 +93,7 @@ Token	*tokenize(char *p)
 			p++;
 			continue ;
 		}
-		if (*p == '+' || *p == '-')
+		if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')')
 		{
 			cur = new_token(TK_RESERVED, cur, p++);
 			continue ;
@@ -101,38 +104,134 @@ Token	*tokenize(char *p)
 			cur->val = strtol(p, &p, 10);
 			continue ;
 		}
-		error_at(token->str, "Cannot tokenize.");
+		error_at(p, "Cannot tokenize.");
 	}
 	new_token(TK_EOF, cur, p);
 	return (head.next);
 }
 
+// parser.c
+Node	*new_node(NodeKind kind, Node *lhs, Node *rhs)
+{
+	Node	*node;
+
+	node = calloc(1, sizeof(Node));
+	node->kind = kind;
+	node->lhs = lhs;
+	node->rhs = rhs;
+	return (node);
+}
+
+Node	*new_node_num(int val)
+{
+	Node	*node;
+
+	node = calloc(1, sizeof(Node));
+	node->kind = ND_NUM;
+	node->val = val;
+	return (node);
+}
+
+Node	*expr(void)
+{
+	Node	*node;
+
+	node = mul();
+	while (1)
+	{
+		if (consume('+'))
+			node = new_node(ND_ADD, node, mul());
+		else if (consume('-'))
+			node = new_node(ND_SUB, node, mul());
+		else
+			return (node);
+	}
+}
+
+Node	*mul(void)
+{
+	Node	*node;
+
+	node = primary();
+	while (1)
+	{
+		if (consume('*'))
+			node = new_node(ND_MUL, node, primary());
+		else if (consume('/'))
+			node = new_node(ND_DIV, node, primary());
+		else
+			return (node);
+	}
+}
+
+Node	*primary(void)
+{
+	Node	*node;
+
+	if (consume('('))
+	{
+		node = expr();
+		expect(')');
+		return (node);
+	}
+	node = new_node_num(expect_number());
+	return (node);
+}
+
+// codegen.c
+void	gen(Node *node)
+{
+	if (node->kind == ND_NUM)
+	{
+		printf("  push %d\n", node->val);
+		return ;
+	}
+	gen(node->lhs);
+	gen(node->rhs);
+	printf("  pop rdi\n");
+	printf("  pop rax\n");
+	if (node->kind == ND_ADD)
+		printf("  add rax, rdi\n");
+	else if (node->kind == ND_SUB)
+		printf("  sub rax, rdi\n");
+	else if (node->kind == ND_MUL)
+		printf("  imul rax, rdi\n");
+	else if (node->kind == ND_DIV)
+	{
+		printf("  cqo\n");
+		printf("  idiv rdi\n");
+	}
+	printf("  push rax\n");
+}
+
+// main
 int	main(int argc, char *argv[])
 {
+	Node	*node;
+
 	if (argc != 2)
 	{
 		fprintf(stderr, "Invalid number of args\n");
 		return (1);
 	}
 
-	// tokenize
 	user_input = argv[1];
+	// tokenize
 	token = tokenize(argv[1]);
+
+	// parse
+	node = expr();
+
+	// code gen first part
 	printf(".intel_syntax noprefix\n");
 	printf(".globl main\n");
 	printf("main:\n");
-	// The start of statements must be number
-	printf("  mov rax, %d\n", expect_number());
-	while (!at_eof())
-	{
-		if (consume('+'))
-		{
-			printf("  add rax, %d\n", expect_number());
-			continue ;
-		}
-		expect('-');
-		printf("  sub rax, %d\n", expect_number());
-	}
+
+	// code gen last part
+	gen(node);
+
+	// Pop stack top to RAX to make it return value.
+	printf("  pop rax\n");
 	printf("  ret\n");
 	return (0);
 }
