@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/09 15:36:52 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/09 15:45:41 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ struct Token {
 	Token		*next;
 	int			val;
 	char		*str;
+	int			len;
 };
 
 typedef enum {

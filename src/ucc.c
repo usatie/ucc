@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:52:42 by susami            #+#    #+#             */
-/*   Updated: 2022/11/09 15:39:24 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/09 15:54:18 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,18 +38,22 @@ void	error_at(char *loc, char *fmt, ...)
 }
 
 // tokenizer.c
-bool	consume(char op)
+bool	consume(char *op)
 {
-	if (token->kind != TK_RESERVED || token->str[0] != op)
+	if (token->kind != TK_RESERVED
+		|| (int)strlen(op) != token->len
+		|| memcmp(token->str, op, token->len))
 		return (false);
 	token = token->next;
 	return (true);
 }
 
-void	expect(char op)
+void	expect(char *op)
 {
-	if (token->kind != TK_RESERVED || token->str[0] != op)
-		error_at(token->str, "expected '%c', but not.", op);
+	if (token->kind != TK_RESERVED
+		|| (int)strlen(op) != token->len
+		|| memcmp(token->str, op, token->len))
+		error_at(token->str, "expected '%s', but not.", op);
 	token = token->next;
 }
 
@@ -68,13 +72,14 @@ bool	at_eof(void)
 	return (token->kind == TK_EOF);
 }
 
-Token	*new_token(TokenKind kind, Token *cur, char *str)
+Token	*new_token(TokenKind kind, Token *cur, char *str, int len)
 {
 	Token	*tok;
 
 	tok = calloc(1, sizeof(Token));
 	tok->kind = kind;
 	tok->str = str;
+	tok->len = len;
 	cur->next = tok;
 	return (tok);
 }
@@ -96,18 +101,18 @@ Token	*tokenize(char *p)
 		if (*p == '+' || *p == '-' || *p == '*' || *p == '/'
 			|| *p == '(' || *p == ')')
 		{
-			cur = new_token(TK_RESERVED, cur, p++);
+			cur = new_token(TK_RESERVED, cur, p++, 1);
 			continue ;
 		}
 		if (isdigit(*p))
 		{
-			cur = new_token(TK_NUM, cur, p);
+			cur = new_token(TK_NUM, cur, p, 0);
 			cur->val = strtol(p, &p, 10);
 			continue ;
 		}
 		error_at(p, "Cannot tokenize.");
 	}
-	new_token(TK_EOF, cur, p);
+	new_token(TK_EOF, cur, p, 0);
 	return (head.next);
 }
 
@@ -140,9 +145,9 @@ Node	*expr(void)
 	node = mul();
 	while (1)
 	{
-		if (consume('+'))
+		if (consume("+"))
 			node = new_node(ND_ADD, node, mul());
-		else if (consume('-'))
+		else if (consume("-"))
 			node = new_node(ND_SUB, node, mul());
 		else
 			return (node);
@@ -156,9 +161,9 @@ Node	*mul(void)
 	node = unary();
 	while (1)
 	{
-		if (consume('*'))
+		if (consume("*"))
 			node = new_node(ND_MUL, node, unary());
-		else if (consume('/'))
+		else if (consume("/"))
 			node = new_node(ND_DIV, node, unary());
 		else
 			return (node);
@@ -167,9 +172,9 @@ Node	*mul(void)
 
 Node	*unary(void)
 {
-	if (consume('+'))
+	if (consume("+"))
 		return (primary());
-	if (consume('-'))
+	if (consume("-"))
 		return (new_node(ND_SUB, new_node_num(0), primary()));
 	return (primary());
 }
@@ -178,10 +183,10 @@ Node	*primary(void)
 {
 	Node	*node;
 
-	if (consume('('))
+	if (consume("("))
 	{
 		node = expr();
-		expect(')');
+		expect(")");
 		return (node);
 	}
 	node = new_node_num(expect_number());
