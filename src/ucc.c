@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:52:42 by susami            #+#    #+#             */
-/*   Updated: 2022/11/09 14:31:39 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/09 15:39:24 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,8 @@ Token	*tokenize(char *p)
 			p++;
 			continue ;
 		}
-		if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')')
+		if (*p == '+' || *p == '-' || *p == '*' || *p == '/'
+			|| *p == '(' || *p == ')')
 		{
 			cur = new_token(TK_RESERVED, cur, p++);
 			continue ;
@@ -152,16 +153,25 @@ Node	*mul(void)
 {
 	Node	*node;
 
-	node = primary();
+	node = unary();
 	while (1)
 	{
 		if (consume('*'))
-			node = new_node(ND_MUL, node, primary());
+			node = new_node(ND_MUL, node, unary());
 		else if (consume('/'))
-			node = new_node(ND_DIV, node, primary());
+			node = new_node(ND_DIV, node, unary());
 		else
 			return (node);
 	}
+}
+
+Node	*unary(void)
+{
+	if (consume('+'))
+		return (primary());
+	if (consume('-'))
+		return (new_node(ND_SUB, new_node_num(0), primary()));
+	return (primary());
 }
 
 Node	*primary(void)
