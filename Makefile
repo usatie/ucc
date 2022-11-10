@@ -1,7 +1,7 @@
 CFLAGS=-std=c11 -g -static -I include
 
-ucc: src/ucc.c
-	cc $(CFLAGS) -o ucc src/ucc.c
+ucc: src/ucc.o src/parse.o src/codegen.o
+	cc $(CFLAGS) -o ucc $^
 
 test: ucc
 	bash test.sh

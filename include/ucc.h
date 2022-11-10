@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/09 16:24:15 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/10 11:47:32 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,9 +50,19 @@ struct Node {
 	int			val;
 };
 
-extern Token			*token;
-extern char				*user_input;
+typedef struct context	context;
+struct context {
+	Token	*token;
+	char	*user_input;
+};
 
+extern context			*ctx;
+
+// error.c
+void	error_at(char *loc, char *fmt, ...);
+
+// tokenize.c
+Token	*tokenize(char *p);
 // parser.c
 Node	*new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node	*new_node_num(int val);
@@ -63,4 +73,7 @@ Node	*add(void);
 Node	*mul(void);
 Node	*unary(void);
 Node	*primary(void);
+
+// codegen.c
+void	gen(Node *node);
 #endif
