@@ -1,6 +1,6 @@
 CFLAGS=-std=c11 -g -static -I include
 
-ucc: src/ucc.o src/parse.o src/codegen.o
+ucc: src/main.o src/tokenize.o src/parse.o src/codegen.o
 	cc $(CFLAGS) -o ucc $^
 
 test: ucc
@@ -10,7 +10,7 @@ debug-test: ucc
 	bash -x test.sh
 
 clean:
-	rm -f ucc *.o *~ tmp*
+	rm -f ucc **/*.o *~ tmp*
 
 docker-test:
 	docker run --rm -v `pwd`:/ucc -w /ucc compilerbook make test
