@@ -1,21 +1,25 @@
+NAME=ucc
 CFLAGS=-std=c11 -g -static -I include
+SRCS=$(wildcard src/*.c)
+OBJS=$(SRCS:.c=.o)
 
-ucc: src/main.o src/tokenize.o src/parse.o src/codegen.o
-	cc $(CFLAGS) -o ucc $^
+$(NAME): $(OBJS)
+	$(CC) -o $(NAME) $(OBJS) $(LDFLAGS)
 
-test: ucc
-	bash test.sh
+$(OBJS): include/ucc.h
 
-debug-test: ucc
-	bash -x test.sh
+test: $(NAME)
+	./test.sh
 
 clean:
-	rm -f ucc **/*.o *~ tmp*
+	rm -f $(NAME) **/*.o *~ tmp*
+
+re: clean $(NAME)
 
 docker-test:
-	docker run --rm -v `pwd`:/ucc -w /ucc compilerbook make test
+	docker run --rm -v `pwd`:/$(NAME) -w /$(NAME) compilerbook make test
 
 run:
-	docker run --rm -it --cap-add=SYS_PTRACE --security-opt="seccomp=unconfined" -v `pwd`:/ucc -w /ucc compilerbook /bin/bash
+	docker run --rm -it --cap-add=SYS_PTRACE --security-opt="seccomp=unconfined" -v `pwd`:/$(NAME) -w /$(NAME) compilerbook /bin/bash
 
-.PHONY: test clean docker-test run
+.PHONY: test clean re docker-test run
