@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/09 15:45:41 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/09 16:24:15 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,12 @@ typedef enum {
 	ND_MUL, // *
 	ND_DIV, // /
 	ND_NUM, // integer
+	ND_EQ, // ==
+	ND_NEQ, // !=
+	ND_LT, // <
+	ND_LTE, // <=
+	ND_GT, // >
+	ND_GTE, // >=
 }	NodeKind;
 
 typedef struct Node		Node;
@@ -51,6 +57,9 @@ extern char				*user_input;
 Node	*new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node	*new_node_num(int val);
 Node	*expr(void);
+Node	*equality(void);
+Node	*relational(void);
+Node	*add(void);
 Node	*mul(void);
 Node	*unary(void);
 Node	*primary(void);

@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:52:42 by susami            #+#    #+#             */
-/*   Updated: 2022/11/09 15:54:18 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/10 11:23:52 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,10 +84,16 @@ Token	*new_token(TokenKind kind, Token *cur, char *str, int len)
 	return (tok);
 }
 
+bool	startswith(char *p, char *q)
+{
+	return (memcmp(p, q, strlen(q)) == 0);
+}
+
 Token	*tokenize(char *p)
 {
 	Token	head;
 	Token	*cur;
+	char	*q;
 
 	head.next = NULL;
 	cur = &head;
@@ -98,8 +104,16 @@ Token	*tokenize(char *p)
 			p++;
 			continue ;
 		}
-		if (*p == '+' || *p == '-' || *p == '*' || *p == '/'
-			|| *p == '(' || *p == ')')
+		// Multi-letter punctuator
+		if (startswith(p, "==") || startswith(p, "!=")
+			|| startswith(p, "<=") || startswith(p, ">="))
+		{
+			cur = new_token(TK_RESERVED, cur, p, 2);
+			p += 2;
+			continue ;
+		}
+		// Single-letter punctuator
+		if (strchr("+-*/()<>", *p))
 		{
 			cur = new_token(TK_RESERVED, cur, p++, 1);
 			continue ;
@@ -107,10 +121,12 @@ Token	*tokenize(char *p)
 		if (isdigit(*p))
 		{
 			cur = new_token(TK_NUM, cur, p, 0);
+			q = p;
 			cur->val = strtol(p, &p, 10);
+			cur->len = p - q;
 			continue ;
 		}
-		error_at(p, "Cannot tokenize.");
+		error_at(p, "Invalid Token.");
 	}
 	new_token(TK_EOF, cur, p, 0);
 	return (head.next);
@@ -139,6 +155,47 @@ Node	*new_node_num(int val)
 }
 
 Node	*expr(void)
+{
+	return (equality());
+}
+
+Node	*equality(void)
+{
+	Node	*node;
+
+	node = relational();
+	while (1)
+	{
+		if (consume("=="))
+			node = new_node(ND_EQ, node, relational());
+		else if (consume("!="))
+			node = new_node(ND_NEQ, node, relational());
+		else
+			return (node);
+	}
+}
+
+Node	*relational(void)
+{
+	Node	*node;
+
+	node = add();
+	while (1)
+	{
+		if (consume("<"))
+			node = new_node(ND_LT, node, add());
+		else if (consume("<="))
+			node = new_node(ND_LTE, node, add());
+		else if (consume(">"))
+			node = new_node(ND_GT, node, add());
+		else if (consume(">="))
+			node = new_node(ND_GTE, node, add());
+		else
+			return (node);
+	}
+}
+
+Node	*add(void)
 {
 	Node	*node;
 
@@ -201,20 +258,73 @@ void	gen(Node *node)
 		printf("  push %d\n", node->val);
 		return ;
 	}
+	//printf("# gen(%s)\n", stringize(node));
 	gen(node->lhs);
 	gen(node->rhs);
 	printf("  pop rdi\n");
 	printf("  pop rax\n");
 	if (node->kind == ND_ADD)
+	{
+		printf("# ADD\n");
 		printf("  add rax, rdi\n");
+	}
 	else if (node->kind == ND_SUB)
+	{
+		printf("# SUB\n");
 		printf("  sub rax, rdi\n");
+	}
 	else if (node->kind == ND_MUL)
+	{
+		printf("# MUL\n");
 		printf("  imul rax, rdi\n");
+	}
 	else if (node->kind == ND_DIV)
 	{
+		printf("# DIV\n");
 		printf("  cqo\n");
 		printf("  idiv rdi\n");
+	}
+	else if (node->kind == ND_EQ)
+	{
+		printf("# EQ\n");
+		printf("  cmp rax, rdi\n");
+		printf("  sete al\n");
+		printf("  movzb rax, al\n");
+	}
+	else if (node->kind == ND_NEQ)
+	{
+		printf("# NEQ\n");
+		printf("  cmp rax, rdi\n");
+		printf("  setne al\n");
+		printf("  movzb rax, al\n");
+	}
+	else if (node->kind == ND_LT)
+	{
+		printf("# LT\n");
+		printf("  cmp rax, rdi\n");
+		printf("  setl al\n");
+		printf("  movzb rax, al\n");
+	}
+	else if (node->kind == ND_LTE)
+	{
+		printf("# LTE\n");
+		printf("  cmp rax, rdi\n");
+		printf("  setle al\n");
+		printf("  movzb rax, al\n");
+	}
+	else if (node->kind == ND_GT)
+	{
+		printf("# GT\n");
+		printf("  cmp rax, rdi\n");
+		printf("  setg al\n");
+		printf("  movzb rax, al\n");
+	}
+	else if (node->kind == ND_GTE)
+	{
+		printf("# GTE\n");
+		printf("  cmp rax, rdi\n");
+		printf("  setge al\n");
+		printf("  movzb rax, al\n");
 	}
 	printf("  push rax\n");
 }
@@ -246,6 +356,7 @@ int	main(int argc, char *argv[])
 	gen(node);
 
 	// Pop stack top to RAX to make it return value.
+	printf("# return from main\n");
 	printf("  pop rax\n");
 	printf("  ret\n");
 	return (0);

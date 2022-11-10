@@ -34,5 +34,29 @@ assert 255 "-1"
 assert 10 "+20-10"
 # unary(is it ok?)
 assert 30 "+20--10"
+# eq
+assert 1 "42==42"
+assert 0 "42==41"
+assert 0 "41==42"
+# neq
+assert 0 "42!=42"
+assert 1 "42!=41"
+assert 1 "41!=42"
+# lt
+assert 0 "42<42"
+assert 0 "42<41"
+assert 1 "41<42"
+# lte
+assert 1 "42<=42"
+assert 0 "42<=41"
+assert 1 "41<=42"
+# gt
+assert 0 "42>42"
+assert 1 "42>41"
+assert 0 "41>42"
+# gte
+assert 1 "42>=42"
+assert 1 "42>=41"
+assert 0 "41>=42"
 
 echo OK
