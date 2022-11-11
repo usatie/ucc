@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/11 10:43:35 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/11 11:01:21 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,14 +51,31 @@ bool	at_eof(void)
 	return (ctx->token->kind == TK_EOF);
 }
 
-Node	*new_node(NodeKind kind, Node *lhs, Node *rhs)
+Node	*new_node(NodeKind kind)
 {
 	Node	*node;
 
 	node = calloc(1, sizeof(Node));
 	node->kind = kind;
+	return (node);
+}
+
+Node	*new_node_binary(NodeKind kind, Node *lhs, Node *rhs)
+{
+	Node	*node;
+
+	node = new_node(kind);
 	node->lhs = lhs;
 	node->rhs = rhs;
+	return (node);
+}
+
+Node	*new_node_unary(NodeKind kind, Node *expr)
+{
+	Node	*node;
+
+	node = new_node(kind);
+	node->lhs = expr;
 	return (node);
 }
 
@@ -66,8 +83,7 @@ Node	*new_node_num(int val)
 {
 	Node	*node;
 
-	node = calloc(1, sizeof(Node));
-	node->kind = ND_NUM;
+	node = new_node(ND_NUM);
 	node->val = val;
 	return (node);
 }
@@ -94,7 +110,7 @@ Node	*stmt(void)
 {
 	Node	*node;
 
-	node = expr();
+	node = new_node_unary(ND_STMT, expr());
 	expect(";");
 	return (node);
 }
@@ -112,9 +128,9 @@ Node	*equality(void)
 	while (1)
 	{
 		if (consume("=="))
-			node = new_node(ND_EQ, node, relational());
+			node = new_node_binary(ND_EQ, node, relational());
 		else if (consume("!="))
-			node = new_node(ND_NEQ, node, relational());
+			node = new_node_binary(ND_NEQ, node, relational());
 		else
 			return (node);
 	}
@@ -128,13 +144,13 @@ Node	*relational(void)
 	while (1)
 	{
 		if (consume("<"))
-			node = new_node(ND_LT, node, add());
+			node = new_node_binary(ND_LT, node, add());
 		else if (consume("<="))
-			node = new_node(ND_LTE, node, add());
+			node = new_node_binary(ND_LTE, node, add());
 		else if (consume(">"))
-			node = new_node(ND_GT, node, add());
+			node = new_node_binary(ND_GT, node, add());
 		else if (consume(">="))
-			node = new_node(ND_GTE, node, add());
+			node = new_node_binary(ND_GTE, node, add());
 		else
 			return (node);
 	}
@@ -148,9 +164,9 @@ Node	*add(void)
 	while (1)
 	{
 		if (consume("+"))
-			node = new_node(ND_ADD, node, mul());
+			node = new_node_binary(ND_ADD, node, mul());
 		else if (consume("-"))
-			node = new_node(ND_SUB, node, mul());
+			node = new_node_binary(ND_SUB, node, mul());
 		else
 			return (node);
 	}
@@ -164,9 +180,9 @@ Node	*mul(void)
 	while (1)
 	{
 		if (consume("*"))
-			node = new_node(ND_MUL, node, unary());
+			node = new_node_binary(ND_MUL, node, unary());
 		else if (consume("/"))
-			node = new_node(ND_DIV, node, unary());
+			node = new_node_binary(ND_DIV, node, unary());
 		else
 			return (node);
 	}
@@ -177,7 +193,7 @@ Node	*unary(void)
 	if (consume("+"))
 		return (primary());
 	if (consume("-"))
-		return (new_node(ND_SUB, new_node_num(0), primary()));
+		return (new_node_binary(ND_SUB, new_node_num(0), primary()));
 	return (primary());
 }
 

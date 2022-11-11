@@ -6,15 +6,48 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/11 10:45:13 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/11 11:08:04 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h>
 #include "ucc.h"
 
+static void	gen_stmt(Node *node);
+static void	gen_expr(Node *node);
+
 // codegen.c
 void	codegen(Node *node)
+{
+	// code gen first part
+	printf(".intel_syntax noprefix\n");
+	printf(".globl main\n");
+	printf("main:\n");
+
+	while (node)
+	{
+		gen_stmt(node);
+		// Evaluated result of the code is on the top of stack.
+		printf("  pop rax\n");
+		node = node->next;
+	}
+
+	// Pop stack top to RAX to make it return value.
+	printf("# return from main\n");
+	printf("  ret\n");
+}
+
+static void	gen_stmt(Node *node)
+{
+	if (node->kind == ND_STMT)
+	{
+		gen_expr(node->lhs);
+		return ;
+	}
+	error_at(NULL, "Invalid kind");
+}
+
+static void	gen_expr(Node *node)
 {
 	if (node->kind == ND_NUM)
 	{
@@ -22,8 +55,8 @@ void	codegen(Node *node)
 		return ;
 	}
 	//printf("# gen(%s)\n", stringize(node));
-	codegen(node->lhs);
-	codegen(node->rhs);
+	gen_expr(node->lhs);
+	gen_expr(node->rhs);
 	printf("  pop rdi\n");
 	printf("  pop rax\n");
 	if (node->kind == ND_ADD)
