@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/10 11:47:32 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/11 10:05:48 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 typedef enum {
 	TK_RESERVED,
+	TK_IDENT,
 	TK_NUM,
 	TK_EOF,
 }	TokenKind;
@@ -52,6 +53,7 @@ struct Node {
 
 typedef struct context	context;
 struct context {
+	Node	*code[100];
 	Token	*token;
 	char	*user_input;
 };
@@ -66,6 +68,10 @@ Token	*tokenize(char *p);
 // parser.c
 Node	*new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node	*new_node_num(int val);
+
+// syntax parser
+void	program(void);
+Node	*stmt(void);
 Node	*expr(void);
 Node	*equality(void);
 Node	*relational(void);

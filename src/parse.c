@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/10 12:02:20 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/11 10:05:42 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include "ucc.h"
 
 // parser.c
+// utility
 bool	consume(char *op)
 {
 	if (ctx->token->kind != TK_RESERVED
@@ -68,6 +69,26 @@ Node	*new_node_num(int val)
 	node = calloc(1, sizeof(Node));
 	node->kind = ND_NUM;
 	node->val = val;
+	return (node);
+}
+
+// syntax parser
+void	program(void)
+{
+	int	i;
+
+	i = 0;
+	while (!at_eof())
+		ctx->code[i++] = stmt();
+	ctx->code[i] = NULL;
+}
+
+Node	*stmt(void)
+{
+	Node	*node;
+
+	node = expr();
+	expect(";");
 	return (node);
 }
 

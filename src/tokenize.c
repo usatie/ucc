@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   tokenizer.c                                        :+:      :+:    :+:   */
+/*   tokenize.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 12:01:38 by susami            #+#    #+#             */
-/*   Updated: 2022/11/10 12:01:38 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/11 09:44:07 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ Token	*tokenize(char *p)
 			continue ;
 		}
 		// Single-letter punctuator
-		if (strchr("+-*/()<>", *p))
+		if (strchr("+-*/()<>;", *p))
 		{
 			cur = new_token(TK_RESERVED, cur, p++, 1);
 			continue ;
@@ -69,6 +69,12 @@ Token	*tokenize(char *p)
 			q = p;
 			cur->val = strtol(p, &p, 10);
 			cur->len = p - q;
+			continue ;
+		}
+		if ('a' <= *p && *p <= 'z')
+		{
+			cur = new_token(TK_IDENT, cur, p++, 0);
+			cur->len = 1;
 			continue ;
 		}
 		error_at(p, "Invalid Token.");

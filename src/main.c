@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ucc.c                                              :+:      :+:    :+:   */
+/*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:52:42 by susami            #+#    #+#             */
-/*   Updated: 2022/11/10 12:03:25 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/11 10:10:53 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void	error_at(char *loc, char *fmt, ...)
 // main
 int	main(int argc, char *argv[])
 {
-	Node	*node;
+	int	i;
 
 	if (argc != 2)
 	{
@@ -50,7 +50,7 @@ int	main(int argc, char *argv[])
 	ctx->token = tokenize(argv[1]);
 
 	// parse
-	node = expr();
+	program();
 
 	// code gen first part
 	printf(".intel_syntax noprefix\n");
@@ -58,11 +58,17 @@ int	main(int argc, char *argv[])
 	printf("main:\n");
 
 	// code gen last part
-	gen(node);
+	i = 0;
+	while (ctx->code[i])
+	{
+		gen(ctx->code[i]);
+		// Evaluated result of the code is on the top of stack.
+		printf("  pop rax\n");
+		i++;
+	}
 
 	// Pop stack top to RAX to make it return value.
 	printf("# return from main\n");
-	printf("  pop rax\n");
 	printf("  ret\n");
 	return (0);
 }
