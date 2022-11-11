@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/11 10:05:48 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/11 10:44:51 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ typedef enum {
 typedef struct Node		Node;
 struct Node {
 	NodeKind	kind;
+	Node		*next;
 	Node		*lhs;
 	Node		*rhs;
 	int			val;
@@ -53,7 +54,7 @@ struct Node {
 
 typedef struct context	context;
 struct context {
-	Node	*code[100];
+	Node	*node;
 	Token	*token;
 	char	*user_input;
 };
@@ -70,7 +71,7 @@ Node	*new_node(NodeKind kind, Node *lhs, Node *rhs);
 Node	*new_node_num(int val);
 
 // syntax parser
-void	program(void);
+Node	*parse(Token *tok);
 Node	*stmt(void);
 Node	*expr(void);
 Node	*equality(void);
@@ -81,5 +82,5 @@ Node	*unary(void);
 Node	*primary(void);
 
 // codegen.c
-void	gen(Node *node);
+void	codegen(Node *node);
 #endif

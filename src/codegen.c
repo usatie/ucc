@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/10 11:32:12 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/11 10:45:13 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "ucc.h"
 
 // codegen.c
-void	gen(Node *node)
+void	codegen(Node *node)
 {
 	if (node->kind == ND_NUM)
 	{
@@ -22,8 +22,8 @@ void	gen(Node *node)
 		return ;
 	}
 	//printf("# gen(%s)\n", stringize(node));
-	gen(node->lhs);
-	gen(node->rhs);
+	codegen(node->lhs);
+	codegen(node->rhs);
 	printf("  pop rdi\n");
 	printf("  pop rax\n");
 	if (node->kind == ND_ADD)

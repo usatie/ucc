@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/11 10:05:42 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/11 10:43:35 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,14 +73,21 @@ Node	*new_node_num(int val)
 }
 
 // syntax parser
-void	program(void)
-{
-	int	i;
 
-	i = 0;
+Node	*parse(Token *tok)
+{
+	Node	*node;
+	Node	*cur;
+
+	(void)tok; // TODO: use this instead of ctx->tok
+	node = stmt();
+	cur = node;
 	while (!at_eof())
-		ctx->code[i++] = stmt();
-	ctx->code[i] = NULL;
+	{
+		cur->next = stmt();
+		cur = cur->next;
+	}
+	return (node);
 }
 
 Node	*stmt(void)

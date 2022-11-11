@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:52:42 by susami            #+#    #+#             */
-/*   Updated: 2022/11/11 10:10:53 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/11 10:44:56 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void	error_at(char *loc, char *fmt, ...)
 // main
 int	main(int argc, char *argv[])
 {
-	int	i;
+	Node	*node;
 
 	if (argc != 2)
 	{
@@ -47,10 +47,10 @@ int	main(int argc, char *argv[])
 
 	ctx->user_input = argv[1];
 	// tokenize
-	ctx->token = tokenize(argv[1]);
+	ctx->token = tokenize(ctx->user_input);
 
 	// parse
-	program();
+	ctx->node = parse(ctx->token);
 
 	// code gen first part
 	printf(".intel_syntax noprefix\n");
@@ -58,13 +58,13 @@ int	main(int argc, char *argv[])
 	printf("main:\n");
 
 	// code gen last part
-	i = 0;
-	while (ctx->code[i])
+	node = ctx->node;
+	while (node)
 	{
-		gen(ctx->code[i]);
+		codegen(node);
 		// Evaluated result of the code is on the top of stack.
 		printf("  pop rax\n");
-		i++;
+		node = node->next;
 	}
 
 	// Pop stack top to RAX to make it return value.
