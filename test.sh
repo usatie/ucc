@@ -60,8 +60,11 @@ assert 1 "42>=41;"
 assert 0 "41>=42;"
 # multiple statements
 assert 3 "1;2;3;"
-# assignment
+# one-letter local variables assignment
 assert 3 "a=1;b=2;a+b;"
 assert 5 "a=1;b=2;a=a+b;b=a+b;"
+# multi-letter local variables assignment
+assert 6 "foo = 1; bar = 2 + 3;foo + bar;"
+assert 12 "foo = 1; bar = 2 + 3; foobar = foo + bar; foo + bar + foobar;"
 
 echo OK

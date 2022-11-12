@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 12:11:24 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 13:52:23 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,14 @@ struct Token {
 	int			val;
 	char		*str;
 	int			len;
+};
+
+typedef struct LVar		LVar;
+struct LVar {
+	LVar	*next;
+	char	*name;
+	int		len; // length of the name
+	int		offset; // offset from rbp
 };
 
 typedef enum {
@@ -53,7 +61,7 @@ struct Node {
 	Node		*lhs;
 	Node		*rhs;
 	int			val; // only for ND_NUM
-	int			offset; // only for ND_LVAR
+	LVar		*lvar; // only for ND_LVAR
 };
 
 typedef struct context	context;

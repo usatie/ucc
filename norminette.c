@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:16:01 by susami            #+#    #+#             */
-/*   Updated: 2022/11/09 14:10:12 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 13:16:51 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,8 @@ int	main(int argc, char *argv[])
 		i++;
 	}
 	asprintf(&cmd, "%s | grep -v -E "
-		"'WRONG_SCOPE_COMMENT"
+		"'"
+		"WRONG_SCOPE_COMMENT"
 		"|EMPTY_LINE_FUNCTION"
 		"|TOO_MANY_FUNCS"
 		"|FORBIDDEN_CHAR_NAME"
@@ -35,7 +36,9 @@ int	main(int argc, char *argv[])
 		"|STRUCT_TYPE_NAMING"
 		"|USER_DEFINED_TYPEDEF"
 		"|MISSING_TYPEDEF_ID"
-		"|TOO_MANY_LINES'",
+		"|TOO_MANY_LINES"
+		"|MULT_ASSIGN_LINE"
+		"'",
 		cmd);
 	system(cmd);
 	return (0);

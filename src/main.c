@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:52:42 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 11:22:21 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 13:23:13 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,12 +58,15 @@ int	main(int argc, char *argv[])
 
 	// tokenize
 	token = tokenize(user_input);
+	printf("# tokenize finished.\n");
 
 	// parse
 	node = parse(token);
+	printf("# parse finished.\n");
 
 	// code gen
 	codegen(node);
+	printf("# codegen finished.\n");
 
 	return (0);
 }

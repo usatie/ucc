@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 12:12:17 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 13:54:52 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,12 +74,43 @@ static Node	*new_node_num(int val)
 	return (node);
 }
 
-static Node	*new_node_lvar(char name)
+static LVar	*find_lvar(const Token *tok, LVar *locals)
 {
-	Node	*node;
+	LVar	*var;
+
+	var = locals;
+	while (var)
+	{
+		if (var->len == tok->len && memcmp(tok->str, var->name, var->len) == 0)
+			return (var);
+		var = var->next;
+	}
+	return (NULL);
+}
+
+static Node	*new_node_lvar(Token *tok)
+{
+	static LVar	*locals;
+	LVar		*lvar;
+	Node		*node;
 
 	node = new_node(ND_LVAR);
-	node->offset = (name - 'a' + 1) * 8;
+	lvar = find_lvar(tok, locals);
+	if (lvar)
+		node->lvar = lvar;
+	else
+	{
+		lvar = calloc(1, sizeof(LVar));
+		lvar->next = locals;
+		lvar->name = tok->str;
+		lvar->len = tok->len;
+		if (locals == NULL)
+			lvar->offset = 8;
+		else
+			lvar->offset = locals->offset + 8;
+		node->lvar = lvar;
+		locals = lvar;
+	}
 	return (node);
 }
 
@@ -264,7 +295,7 @@ Node	*primary(Token **rest, Token *tok)
 	}
 	if (tok->kind == TK_IDENT)
 	{
-		node = new_node_lvar(tok->str[0]);
+		node = new_node_lvar(tok);
 		*rest = tok->next;
 		return (node);
 	}
