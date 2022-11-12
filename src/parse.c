@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 11:14:32 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 11:30:47 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,37 +17,6 @@
 
 // parser.c
 // utility
-/*
-bool	consume(Token *token, char *op)
-{
-	if (token->kind != TK_RESERVED
-		|| (int)strlen(op) != token->len
-		|| memcmp(token->str, op, token->len))
-		return (false);
-	ctx->token = token->next;
-	return (true);
-}
-
-void	expect(Token *token, char *op)
-{
-	if (token->kind != TK_RESERVED
-		|| (int)strlen(op) != token->len
-		|| memcmp(token->str, op, token->len))
-		error_at(token->str, "expected '%s', but not.", op);
-	ctx->token = token->next;
-}
-
-int	expect_number(Token *token)
-{
-	const int	val = token->val;
-
-	if (token->kind != TK_NUM)
-		error_at(token->str, "expected number, but not.");
-	ctx->token = token->next;
-	return (val);
-}
-*/
-
 // Returns if `token` matches `op`.
 static bool	isequal(const Token *token, const char *op)
 {
@@ -57,20 +26,18 @@ static bool	isequal(const Token *token, const char *op)
 }
 
 // Ensure that `token` matches `op`.
-// Returns the next token if it does.
-static Token	*expect(const Token *token, const char *op)
+static void	expect(const Token *token, const char *op)
 {
 	if (!isequal(token, op))
 		error_at(token->str, "expected '%s', but not.", op);
-	return (token->next);
 }
 
-bool	at_eof(Token *token)
+static bool	at_eof(Token *token)
 {
 	return (token->kind == TK_EOF);
 }
 
-Node	*new_node(NodeKind kind)
+static Node	*new_node(NodeKind kind)
 {
 	Node	*node;
 
@@ -79,7 +46,7 @@ Node	*new_node(NodeKind kind)
 	return (node);
 }
 
-Node	*new_node_binary(NodeKind kind, Node *lhs, Node *rhs)
+static Node	*new_node_binary(NodeKind kind, Node *lhs, Node *rhs)
 {
 	Node	*node;
 
@@ -89,7 +56,7 @@ Node	*new_node_binary(NodeKind kind, Node *lhs, Node *rhs)
 	return (node);
 }
 
-Node	*new_node_unary(NodeKind kind, Node *expr)
+static Node	*new_node_unary(NodeKind kind, Node *expr)
 {
 	Node	*node;
 
@@ -98,7 +65,7 @@ Node	*new_node_unary(NodeKind kind, Node *expr)
 	return (node);
 }
 
-Node	*new_node_num(int val)
+static Node	*new_node_num(int val)
 {
 	Node	*node;
 
@@ -129,7 +96,8 @@ Node	*stmt(Token **rest, Token *tok)
 	Node	*node;
 
 	node = new_node_unary(ND_STMT, expr(&tok, tok));
-	*rest = expect(tok, ";");
+	expect(tok, ";");
+	*rest = tok->next;
 	return (node);
 }
 
@@ -237,7 +205,8 @@ Node	*primary(Token **rest, Token *tok)
 	if (isequal(tok, "("))
 	{
 		node = expr(&tok, tok->next);
-		*rest = expect(tok, ")");
+		expect(tok, ")");
+		*rest = tok->next;
 		return (node);
 	}
 	else if (tok->kind == TK_NUM)

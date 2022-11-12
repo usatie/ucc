@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 11:21:05 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 11:27:35 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,11 +67,6 @@ void	error_at(const char *loc, const char *fmt, ...)\
 // tokenize.c
 Token	*tokenize(char *p);
 // parser.c
-Node	*new_node(NodeKind kind);
-Node	*new_node_binary(NodeKind kind, Node *lhs, Node *rhs);
-Node	*new_node_unary(NodeKind kind, Node *expr);
-Node	*new_node_num(int val);
-
 // syntax parser
 Node	*parse(Token *tok);
 Node	*stmt(Token **rest, Token *tok);
