@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:52:42 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 13:23:13 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 14:18:11 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include "ucc.h"
 
-static char	*user_input;
+context	ctx;
 
 // error.c
 void	error(const char *fmt, ...)
@@ -31,10 +31,10 @@ void	error(const char *fmt, ...)
 void	error_at(const char *loc, const char *fmt, ...)
 {
 	va_list		ap;
-	const int	pos = loc - user_input;
+	const int	pos = loc - ctx.user_input;
 
 	va_start(ap, fmt);
-	fprintf(stderr, "%s\n", user_input);
+	fprintf(stderr, "%s\n", ctx.user_input);
 	fprintf(stderr, "%*s", pos, " "); // print spaces for pos
 	fprintf(stderr, "^ ");
 	vfprintf(stderr, fmt, ap);
@@ -54,10 +54,10 @@ int	main(int argc, char *argv[])
 		fprintf(stderr, "Invalid number of args\n");
 		return (1);
 	}
-	user_input = argv[1];
+	ctx.user_input = argv[1];
 
 	// tokenize
-	token = tokenize(user_input);
+	token = tokenize(ctx.user_input);
 	printf("# tokenize finished.\n");
 
 	// parse

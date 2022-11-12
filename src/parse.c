@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 13:54:52 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 14:20:32 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,11 +74,11 @@ static Node	*new_node_num(int val)
 	return (node);
 }
 
-static LVar	*find_lvar(const Token *tok, LVar *locals)
+static LVar	*find_lvar(const Token *tok)
 {
 	LVar	*var;
 
-	var = locals;
+	var = ctx.lvars;
 	while (var)
 	{
 		if (var->len == tok->len && memcmp(tok->str, var->name, var->len) == 0)
@@ -90,26 +90,25 @@ static LVar	*find_lvar(const Token *tok, LVar *locals)
 
 static Node	*new_node_lvar(Token *tok)
 {
-	static LVar	*locals;
-	LVar		*lvar;
-	Node		*node;
+	LVar	*lvar;
+	Node	*node;
 
 	node = new_node(ND_LVAR);
-	lvar = find_lvar(tok, locals);
+	lvar = find_lvar(tok);
 	if (lvar)
 		node->lvar = lvar;
 	else
 	{
 		lvar = calloc(1, sizeof(LVar));
-		lvar->next = locals;
+		lvar->next = ctx.lvars;
 		lvar->name = tok->str;
 		lvar->len = tok->len;
-		if (locals == NULL)
+		if (ctx.lvars == NULL)
 			lvar->offset = 8;
 		else
-			lvar->offset = locals->offset + 8;
+			lvar->offset = ctx.lvars->offset + 8;
 		node->lvar = lvar;
-		locals = lvar;
+		ctx.lvars = lvar;
 	}
 	return (node);
 }

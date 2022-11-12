@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 13:52:23 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 14:20:48 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,9 +66,11 @@ struct Node {
 
 typedef struct context	context;
 struct context {
-	Node	*node;
-	Token	*token;
+	char	*user_input;
+	LVar	*lvars;
 };
+
+extern context			ctx;
 
 // error.c
 void	error(const char *fmt, ...) __attribute__((noreturn));

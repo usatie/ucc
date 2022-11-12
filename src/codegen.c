@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 13:53:44 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 14:23:36 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 static void	gen_stmt(Node *node);
 static void	gen_expr(Node *node);
+static int	stack_size(void);
 
 // codegen.c
 void	codegen(Node *node)
@@ -25,15 +26,15 @@ void	codegen(Node *node)
 	printf("main:\n");
 
 	// prologue
-	// Allocate 26 local variables (8 * 26 = 208)
+	// Allocate local variables
 	printf("# Prologue\n");
 	printf("  push rbp\n");
 	printf("  mov rbp, rsp\n");
-	printf("  sub rsp, 208\n");
+	printf("  sub rsp, %d\n", stack_size());
 	/*
 	  If needed to zero initialize all local variables
 	  This is also ok?
-	for (int i = 0; i < 26; i++)
+	for (int i = 0; i < stack_size() / 8; i++)
 	{
 		printf("  push 0\n");
 	}
@@ -177,4 +178,11 @@ static void	gen_expr(Node *node)
 		printf("  movzb rax, al\n");
 	}
 	printf("  push rax\n");
+}
+
+static int	stack_size(void)
+{
+	if (ctx.lvars == NULL)
+		return (0);
+	return (ctx.lvars->offset);
 }
