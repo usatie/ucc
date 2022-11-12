@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 15:20:36 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 15:56:20 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,14 +54,21 @@ typedef enum {
 	ND_LVAR, // local variable
 	ND_EXPR_STMT, // expression statement
 	ND_RETURN_STMT, // return
+	ND_IF_STMT, // if
 }	NodeKind;
 
 typedef struct Node		Node;
 struct Node {
 	NodeKind	kind;
-	Node		*next; // only for ND_STMT
+	Node		*next; // Next node (for ND_*_STMT)
+
 	Node		*lhs;
 	Node		*rhs;
+
+	// "if" statement
+	Node		*cond;
+	Node		*then;
+
 	int			val; // only for ND_NUM
 	LVar		*lvar; // only for ND_LVAR
 };

@@ -16,6 +16,11 @@ assert() {
 	fi
 }
 
+# if
+assert 42 "if (1) return 42; return 1;"
+assert 42 "if (0) return 1; return 42;"
+assert 42 "if (0) return 1; if (0) return 2; if (1) return 42;"
+
 # num
 assert 0 "0;"
 assert 42 "42;"

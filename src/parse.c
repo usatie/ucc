@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 15:34:35 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 15:57:36 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,6 +121,7 @@ EBNF syntax
 program      = stmt*
 stmt         = expr ";"
              | "return" expr ";"
+			 | "if" "(" expr ")" stmt
 expr         = assign
 assign       = equality ("=" assign)?
 equality     = relational ("==" relational | "!=" relational)*
@@ -150,12 +151,30 @@ Node	*parse(Token *tok)
 
 // stmt = "return" expr ";"
 //      | expr ";"
+//      | "if" "(" expr ")" stmt
 Node	*stmt(Token **rest, Token *tok)
 {
 	Node	*node;
 
 	if (isequal(tok, "return"))
 		node = new_node_unary(ND_RETURN_STMT, expr(&tok, tok->next));
+	else if (isequal(tok, "if"))
+	{
+		node = new_node(ND_IF_STMT);
+		tok = tok->next;
+		expect(tok, "(");
+		tok = tok->next;
+		node->cond = expr(&tok, tok);
+		expect(tok, ")");
+		tok = tok->next;
+		node->then = stmt(&tok, tok);
+		/*
+		if (isequal(tok, "else"))
+			node->els = expr(&tok, tok->next);
+		*/
+		*rest = tok;
+		return (node);
+	}
 	else
 		node = new_node_unary(ND_EXPR_STMT, expr(&tok, tok));
 	expect(tok, ";");

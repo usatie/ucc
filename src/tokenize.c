@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 12:01:38 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 15:35:44 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 15:43:29 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ static bool	is_match_keyword(char *p, char *kw)
 
 static bool	is_keyword(char *p)
 {
-	static char		*kw[] = {"return"};
+	static char		*kw[] = {"return", "if"};
 	unsigned long	i;
 
 	i = 0;
@@ -127,7 +127,7 @@ Token	*tokenize(char *p)
 			cur->len = p - q;
 			continue ;
 		}
-		error_at(p, "Invalid Token.");
+		error_at(p, "Invalid character.");
 	}
 	cur->next = new_token(TK_EOF, p);
 	covnert_keywords(head.next);

@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 15:03:19 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 16:16:15 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,10 +44,6 @@ void	codegen(Node *node)
 	while (node)
 	{
 		gen_stmt(node);
-		// Evaluated result of the code is on the top of stack.
-		// Pop stack top to RAX to make it return value,
-		// and clean up the top of the stack.
-		printf("  pop rax\n");
 		node = node->next;
 	}
 
@@ -61,6 +57,8 @@ void	codegen(Node *node)
 
 static void	gen_stmt(Node *node)
 {
+	static int	label;
+
 	if (node->kind == ND_RETURN_STMT)
 	{
 		gen_expr(node->lhs);
@@ -73,6 +71,21 @@ static void	gen_stmt(Node *node)
 	if (node->kind == ND_EXPR_STMT)
 	{
 		gen_expr(node->lhs);
+		// Evaluated result of the code is on the top of the stack.
+		// Pop to RAX to make it return value,
+		// and clean up the top of the stack.
+		printf("  pop rax\n");
+		return ;
+	}
+	if (node->kind == ND_IF_STMT)
+	{
+		gen_expr(node->cond);
+		printf("  pop rax\n");
+		printf("  cmp rax, 0\n");
+		printf("  je .Lend%d\n", label);
+		gen_stmt(node->then);
+		printf(".Lend%d:\n", label);
+		label++;
 		return ;
 	}
 	error("Invalid kind");
