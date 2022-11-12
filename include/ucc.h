@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 15:03:11 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 15:20:36 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 
 typedef enum {
 	TK_RESERVED,
-	TK_RETURN,
+	TK_KEYWORD,
 	TK_IDENT,
 	TK_NUM,
 	TK_EOF,

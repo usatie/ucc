@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 12:01:38 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 14:31:58 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 15:35:44 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,41 @@ static bool	is_ident_first(char c)
 static bool	is_ident_non_first(char c)
 {
 	return (is_ident_first(c) || isdigit(c));
+}
+
+static bool	is_match_keyword(char *p, char *kw)
+{
+	const size_t	len = strlen(kw);
+
+	return (strncmp(p, kw, len) == 0 && !is_ident_non_first(p[len]));
+}
+
+static bool	is_keyword(char *p)
+{
+	static char		*kw[] = {"return"};
+	unsigned long	i;
+
+	i = 0;
+	while (i < sizeof(kw) / sizeof(*kw))
+	{
+		if (is_match_keyword(p, kw[i]))
+			return (true);
+		i++;
+	}
+	return (false);
+}
+
+static void	covnert_keywords(Token *tok)
+{
+	Token	*t;
+
+	t = tok;
+	while (t->kind != TK_EOF)
+	{
+		if (t->kind == TK_IDENT && is_keyword(t->str))
+			t->kind = TK_KEYWORD;
+		t = t->next;
+	}
 }
 
 Token	*tokenize(char *p)
@@ -81,12 +116,7 @@ Token	*tokenize(char *p)
 			cur->len = p - q;
 			continue ;
 		}
-		if (strncmp(p, "return", 6) == 0 && !is_ident_non_first(p[6]))
-		{
-			cur = cur->next = new_token(TK_RETURN, p);
-			p += 6;
-			continue ;
-		}
+		// identifier or keyword
 		if (is_ident_first(*p))
 		{
 			cur = cur->next = new_token(TK_IDENT, p);
@@ -100,5 +130,6 @@ Token	*tokenize(char *p)
 		error_at(p, "Invalid Token.");
 	}
 	cur->next = new_token(TK_EOF, p);
+	covnert_keywords(head.next);
 	return (head.next);
 }

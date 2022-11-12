@@ -3,6 +3,7 @@
 **/*.o
 **/*.s
 **/a.out
+**/*.swp
 /tmp*
 ucc
 mynorminette

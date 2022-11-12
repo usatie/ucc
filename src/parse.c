@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 15:03:05 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 15:34:35 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,7 @@
 // Returns if `token` matches `op`.
 static bool	isequal(const Token *token, const char *op)
 {
-	return (token->kind == TK_RESERVED
-		&& memcmp(token->str, op, token->len) == 0
+	return (memcmp(token->str, op, token->len) == 0
 		&& op[token->len] == '\0');
 }
 
@@ -155,7 +154,7 @@ Node	*stmt(Token **rest, Token *tok)
 {
 	Node	*node;
 
-	if (tok->kind == TK_RETURN)
+	if (isequal(tok, "return"))
 		node = new_node_unary(ND_RETURN_STMT, expr(&tok, tok->next));
 	else
 		node = new_node_unary(ND_EXPR_STMT, expr(&tok, tok));
