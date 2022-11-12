@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 12:29:53 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 12:38:13 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ void	codegen(Node *node)
 	  This is also ok?
 	for (int i = 0; i < 26; i++)
 	{
-		printf("  push 0");
+		printf("  push 0\n");
 	}
 	*/
 
