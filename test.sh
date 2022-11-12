@@ -16,6 +16,9 @@ assert() {
 	fi
 }
 
+# while
+assert 42 "i = 0; while (i < 42) i = i + 1; return i;"
+
 # if
 assert 42 "if (1) return 42; return 1;"
 assert 42 "if (0) return 1; return 42;"

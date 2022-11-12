@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 16:17:42 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 16:38:10 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ typedef enum {
 	ND_EXPR_STMT, // expression statement
 	ND_RETURN_STMT, // return
 	ND_IF_STMT, // if
+	ND_WHILE_STMT, // while
 }	NodeKind;
 
 typedef struct Node		Node;
