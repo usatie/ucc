@@ -16,6 +16,11 @@ assert() {
 	fi
 }
 
+# for
+assert 21 "for (i = 0; i < 21; i = i+1) 1; return i;"
+assert 42 "j = 0; for (i = 0; i < 21; i = i+1) j = j + 2; return j;"
+assert 3 "for (;;) return 3; 1;"
+
 # while
 assert 42 "i = 0; while (i < 42) i = i + 1; return i;"
 

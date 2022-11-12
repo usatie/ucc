@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 16:38:10 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 16:48:35 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ typedef enum {
 	ND_RETURN_STMT, // return
 	ND_IF_STMT, // if
 	ND_WHILE_STMT, // while
+	ND_FOR_STMT, // for
 }	NodeKind;
 
 typedef struct Node		Node;
@@ -66,7 +67,9 @@ struct Node {
 	Node		*lhs;
 	Node		*rhs;
 
-	// "if" statement
+	// "if", "while" or "for" statement
+	Node		*init;
+	Node		*inc;
 	Node		*cond;
 	Node		*then;
 	Node		*els;
@@ -94,6 +97,7 @@ Token	*tokenize(char *p);
 // syntax parser
 Node	*parse(Token *tok);
 Node	*stmt(Token **rest, Token *tok);
+Node	*expr_stmt(Token **rest, Token *tok);
 Node	*expr(Token **rest, Token *tok);
 Node	*assign(Token **rest, Token *tok);
 Node	*equality(Token **rest, Token *tok);

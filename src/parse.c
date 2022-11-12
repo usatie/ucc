@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 16:37:57 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 17:23:04 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,10 +121,12 @@ EBNF syntax
 (Exetnded Backus-Naur form)
 
 program      = stmt*
-stmt         = expr ";"
+stmt         = expr-stmt
              | "return" expr ";"
 			 | "if" "(" expr ")" stmt ("else" stmt)?
 			 | "while" "(" expr ")" stmt
+             | "for" "(" expr? ";" expr? ";" expr? ")" stmt
+expr-stmt    = expr ";"
 expr         = assign
 assign       = equality ("=" assign)?
 equality     = relational ("==" relational | "!=" relational)*
@@ -153,9 +155,10 @@ Node	*parse(Token *tok)
 }
 
 // stmt = "return" expr ";"
-//      | expr ";"
 //      | "if" "(" expr ")" stmt ("else" stmt)?
 //      | "while" "(" expr ")" stmt
+//      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
+//      | expr-stmt
 Node	*stmt(Token **rest, Token *tok)
 {
 	Node	*node;
@@ -164,6 +167,26 @@ Node	*stmt(Token **rest, Token *tok)
 	{
 		node = new_node_unary(ND_RETURN_STMT, expr(&tok, tok->next));
 		*rest = expect_and_skip(tok, ";");
+		return (node);
+	}
+	else if (isequal(tok, "for"))
+	{
+		node = new_node(ND_FOR_STMT);
+		tok = expect_and_skip(tok->next, "(");
+		// init? ;
+		if (!isequal(tok, ";"))
+			node->init = expr(&tok, tok);
+		tok = expect_and_skip(tok, ";");
+		// cond? ;
+		if (!isequal(tok, ";"))
+			node->cond = expr(&tok, tok);
+		tok = expect_and_skip(tok, ";");
+		// inc?
+		if (!isequal(tok, ")"))
+			node->inc = expr(&tok, tok);
+		tok = expect_and_skip(tok, ")");
+		// then
+		node->then = stmt(rest, tok);
 		return (node);
 	}
 	else if (isequal(tok, "if"))
@@ -189,11 +212,17 @@ Node	*stmt(Token **rest, Token *tok)
 		return (node);
 	}
 	else
-	{
-		node = new_node_unary(ND_EXPR_STMT, expr(&tok, tok));
-		*rest = expect_and_skip(tok, ";");
-		return (node);
-	}
+		return (expr_stmt(rest, tok));
+}
+
+// expr-stmt = expr ";"
+Node	*expr_stmt(Token **rest, Token *tok)
+{
+	Node	*node;
+
+	node = new_node_unary(ND_EXPR_STMT, expr(&tok, tok));
+	*rest = expect_and_skip(tok, ";");
+	return (node);
 }
 
 // expr = assign

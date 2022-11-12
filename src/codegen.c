@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 16:40:54 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 17:21:32 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,36 @@ static void	gen_stmt(Node *node)
 		printf("  cmp rax, 0\n");
 		printf("  je .Lend%d\n", label);
 		gen_stmt(node->then);
+		printf("  jmp .Lstart%d\n", label);
+		printf(".Lend%d:\n", label);
+		label++;
+		return ;
+	}
+	if (node->kind == ND_FOR_STMT)
+	{
+		printf("# for.init\n");
+		if (node->init)
+		{
+			gen_expr(node->init);
+			printf("  pop rax\n");
+		}
+		printf(".Lstart%d:\n", label);
+		printf("# for.cond\n");
+		if (node->cond)
+		{
+			gen_expr(node->cond);
+			printf("  pop rax\n");
+			printf("  cmp rax, 0\n");
+			printf("  je .Lend%d\n", label);
+		}
+		printf("# for.then\n");
+		gen_stmt(node->then);
+		printf("# for.inc\n");
+		if (node->inc)
+		{
+			gen_expr(node->inc);
+			printf("  pop rax\n");
+		}
 		printf("  jmp .Lstart%d\n", label);
 		printf(".Lend%d:\n", label);
 		label++;
