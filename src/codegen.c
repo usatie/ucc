@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 16:16:15 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 16:23:19 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,8 +82,12 @@ static void	gen_stmt(Node *node)
 		gen_expr(node->cond);
 		printf("  pop rax\n");
 		printf("  cmp rax, 0\n");
-		printf("  je .Lend%d\n", label);
+		printf("  je .Lelse%d\n", label);
 		gen_stmt(node->then);
+		printf("  jmp .Lend%d\n", label);
+		printf(".Lelse%d:\n", label);
+		if (node->els)
+			gen_stmt(node->els);
 		printf(".Lend%d:\n", label);
 		label++;
 		return ;

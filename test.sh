@@ -21,6 +21,10 @@ assert 42 "if (1) return 42; return 1;"
 assert 42 "if (0) return 1; return 42;"
 assert 42 "if (0) return 1; if (0) return 2; if (1) return 42;"
 
+# if else
+assert 42 "if (0) return 1; else return 42; return 0;"
+assert 42 "if (1) return 42; else return 1; return 0;"
+
 # num
 assert 0 "0;"
 assert 42 "42;"

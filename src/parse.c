@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 15:57:36 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 16:26:04 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,10 +168,8 @@ Node	*stmt(Token **rest, Token *tok)
 		expect(tok, ")");
 		tok = tok->next;
 		node->then = stmt(&tok, tok);
-		/*
 		if (isequal(tok, "else"))
-			node->els = expr(&tok, tok->next);
-		*/
+			node->els = stmt(&tok, tok->next);
 		*rest = tok;
 		return (node);
 	}
