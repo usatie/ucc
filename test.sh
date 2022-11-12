@@ -60,5 +60,8 @@ assert 1 "42>=41;"
 assert 0 "41>=42;"
 # multiple statements
 assert 3 "1;2;3;"
+# assignment
+assert 3 "a=1;b=2;a+b;"
+assert 5 "a=1;b=2;a=a+b;b=a+b;"
 
 echo OK

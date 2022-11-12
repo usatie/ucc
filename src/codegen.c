@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/11 11:08:04 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 12:29:53 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,16 +24,37 @@ void	codegen(Node *node)
 	printf(".globl main\n");
 	printf("main:\n");
 
+	// prologue
+	// Allocate 26 local variables (8 * 26 = 208)
+	printf("# Prologue\n");
+	printf("  push rbp\n");
+	printf("  mov rbp, rsp\n");
+	printf("  sub rsp, 208\n");
+	/*
+	  If needed to zero initialize all local variables
+	  This is also ok?
+	for (int i = 0; i < 26; i++)
+	{
+		printf("  push 0");
+	}
+	*/
+
+	printf("# Program\n");
 	while (node)
 	{
 		gen_stmt(node);
 		// Evaluated result of the code is on the top of stack.
+		// Pop stack top to RAX to make it return value,
+		// and clean up the top of the stack.
 		printf("  pop rax\n");
 		node = node->next;
 	}
 
-	// Pop stack top to RAX to make it return value.
-	printf("# return from main\n");
+	// Epilogue
+	// The last result is on rax
+	printf("# Epilogue\n");
+	printf("  mov rsp, rbp\n");
+	printf("  pop rbp\n");
 	printf("  ret\n");
 }
 
@@ -47,11 +68,44 @@ static void	gen_stmt(Node *node)
 	error_at(NULL, "Invalid kind");
 }
 
+static void	gen_lval(Node *node)
+{
+	int	offset;
+
+	if (node->kind == ND_LVAR)
+	{
+		offset = node->offset;
+		printf("  mov rax, rbp\n");
+		printf("  sub rax, %d\n", offset);
+		printf("  push rax\n");
+		return ;
+	}
+	error("Expected local variable.");
+}
+
 static void	gen_expr(Node *node)
 {
 	if (node->kind == ND_NUM)
 	{
 		printf("  push %d\n", node->val);
+		return ;
+	}
+	else if (node->kind == ND_LVAR)
+	{
+		gen_lval(node);
+		printf("  pop rax\n");
+		printf("  mov rax, [rax]\n");
+		printf("  push rax\n");
+		return ;
+	}
+	else if (node->kind == ND_ASSIGN)
+	{
+		gen_lval(node->lhs);
+		gen_expr(node->rhs);
+		printf("  pop rdi # rvalue\n");
+		printf("  pop rax # lvalue\n");
+		printf("  mov [rax], rdi # lvalue = rvalue\n");
+		printf("  push rdi\n");
 		return ;
 	}
 	//printf("# gen(%s)\n", stringize(node));

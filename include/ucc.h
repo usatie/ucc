@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 11:27:35 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 12:11:24 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,8 @@ typedef enum {
 	ND_GT, // >
 	ND_GTE, // >=
 	ND_STMT, // statement
+	ND_ASSIGN, // = assignment
+	ND_LVAR, // local variable
 }	NodeKind;
 
 typedef struct Node		Node;
@@ -51,6 +53,7 @@ struct Node {
 	Node		*lhs;
 	Node		*rhs;
 	int			val; // only for ND_NUM
+	int			offset; // only for ND_LVAR
 };
 
 typedef struct context	context;
@@ -71,6 +74,7 @@ Token	*tokenize(char *p);
 Node	*parse(Token *tok);
 Node	*stmt(Token **rest, Token *tok);
 Node	*expr(Token **rest, Token *tok);
+Node	*assign(Token **rest, Token *tok);
 Node	*equality(Token **rest, Token *tok);
 Node	*relational(Token **rest, Token *tok);
 Node	*add(Token **rest, Token *tok);
