@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:52:42 by susami            #+#    #+#             */
-/*   Updated: 2022/11/11 11:14:43 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 11:22:21 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,17 +15,26 @@
 #include <stdlib.h>
 #include "ucc.h"
 
-context	*ctx;
+static char	*user_input;
 
 // error.c
-void	error_at(char *loc, char *fmt, ...)
+void	error(const char *fmt, ...)
 {
 	va_list		ap;
-	const int	pos = loc - ctx->user_input;
 
-	printf("ERROR!\n");
 	va_start(ap, fmt);
-	fprintf(stderr, "%s\n", ctx->user_input);
+	vfprintf(stderr, fmt, ap);
+	fprintf(stderr, "\n");
+	exit(1);
+}
+
+void	error_at(const char *loc, const char *fmt, ...)
+{
+	va_list		ap;
+	const int	pos = loc - user_input;
+
+	va_start(ap, fmt);
+	fprintf(stderr, "%s\n", user_input);
 	fprintf(stderr, "%*s", pos, " "); // print spaces for pos
 	fprintf(stderr, "^ ");
 	vfprintf(stderr, fmt, ap);
@@ -36,22 +45,25 @@ void	error_at(char *loc, char *fmt, ...)
 // main
 int	main(int argc, char *argv[])
 {
+	Token	*token;
+	Node	*node;
+
+	// argparse
 	if (argc != 2)
 	{
 		fprintf(stderr, "Invalid number of args\n");
 		return (1);
 	}
-	ctx = calloc(1, sizeof(context));
+	user_input = argv[1];
 
-	ctx->user_input = argv[1];
 	// tokenize
-	ctx->token = tokenize(ctx->user_input);
+	token = tokenize(user_input);
 
 	// parse
-	ctx->node = parse(ctx->token);
+	node = parse(token);
 
 	// code gen
-	codegen(ctx->node);
+	codegen(node);
 
 	return (0);
 }

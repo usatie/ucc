@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/11 11:01:15 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 11:21:05 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,13 +57,12 @@ typedef struct context	context;
 struct context {
 	Node	*node;
 	Token	*token;
-	char	*user_input;
 };
 
-extern context			*ctx;
-
 // error.c
-void	error_at(char *loc, char *fmt, ...);
+void	error(const char *fmt, ...) __attribute__((noreturn));
+void	error_at(const char *loc, const char *fmt, ...)\
+			__attribute__((noreturn));
 
 // tokenize.c
 Token	*tokenize(char *p);
@@ -75,14 +74,14 @@ Node	*new_node_num(int val);
 
 // syntax parser
 Node	*parse(Token *tok);
-Node	*stmt(void);
-Node	*expr(void);
-Node	*equality(void);
-Node	*relational(void);
-Node	*add(void);
-Node	*mul(void);
-Node	*unary(void);
-Node	*primary(void);
+Node	*stmt(Token **rest, Token *tok);
+Node	*expr(Token **rest, Token *tok);
+Node	*equality(Token **rest, Token *tok);
+Node	*relational(Token **rest, Token *tok);
+Node	*add(Token **rest, Token *tok);
+Node	*mul(Token **rest, Token *tok);
+Node	*unary(Token **rest, Token *tok);
+Node	*primary(Token **rest, Token *tok);
 
 // codegen.c
 void	codegen(Node *node);
