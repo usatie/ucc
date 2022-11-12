@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 16:26:04 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 16:31:07 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,17 +18,19 @@
 // parser.c
 // utility
 // Returns if `token` matches `op`.
-static bool	isequal(const Token *token, const char *op)
+static bool	isequal(const Token *tok, const char *op)
 {
-	return (memcmp(token->str, op, token->len) == 0
-		&& op[token->len] == '\0');
+	return (memcmp(tok->str, op, tok->len) == 0
+		&& op[tok->len] == '\0');
 }
 
-// Ensure that `token` matches `op`.
-static void	expect(const Token *token, const char *op)
+// Ensure that `token` matches `op`,
+// and returns the next token.
+static Token	*expect_and_skip(const Token *tok, const char *op)
 {
-	if (!isequal(token, op))
-		error_at(token->str, "expected '%s', but not.", op);
+	if (!isequal(tok, op))
+		error_at(tok->str, "expected '%s', but not.", op);
+	return (tok->next);
 }
 
 static bool	at_eof(Token *token)
@@ -161,12 +163,9 @@ Node	*stmt(Token **rest, Token *tok)
 	else if (isequal(tok, "if"))
 	{
 		node = new_node(ND_IF_STMT);
-		tok = tok->next;
-		expect(tok, "(");
-		tok = tok->next;
+		tok = expect_and_skip(tok->next, "(");
 		node->cond = expr(&tok, tok);
-		expect(tok, ")");
-		tok = tok->next;
+		tok = expect_and_skip(tok, ")");
 		node->then = stmt(&tok, tok);
 		if (isequal(tok, "else"))
 			node->els = stmt(&tok, tok->next);
@@ -175,8 +174,7 @@ Node	*stmt(Token **rest, Token *tok)
 	}
 	else
 		node = new_node_unary(ND_EXPR_STMT, expr(&tok, tok));
-	expect(tok, ";");
-	*rest = tok->next;
+	*rest = expect_and_skip(tok, ";");
 	return (node);
 }
 
@@ -303,8 +301,7 @@ Node	*primary(Token **rest, Token *tok)
 	if (isequal(tok, "("))
 	{
 		node = expr(&tok, tok->next);
-		expect(tok, ")");
-		*rest = tok->next;
+		*rest = expect_and_skip(tok, ")");
 		return (node);
 	}
 	if (tok->kind == TK_NUM)
