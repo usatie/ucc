@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 12:01:38 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 13:27:33 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 14:31:58 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,8 +41,6 @@ static bool	is_ident_non_first(char c)
 {
 	return (is_ident_first(c) || isdigit(c));
 }
-
-#include <stdio.h>
 
 Token	*tokenize(char *p)
 {
@@ -81,6 +79,12 @@ Token	*tokenize(char *p)
 			q = p;
 			cur->val = strtol(p, &p, 10);
 			cur->len = p - q;
+			continue ;
+		}
+		if (strncmp(p, "return", 6) == 0 && !is_ident_non_first(p[6]))
+		{
+			cur = cur->next = new_token(TK_RETURN, p);
+			p += 6;
 			continue ;
 		}
 		if (is_ident_first(*p))

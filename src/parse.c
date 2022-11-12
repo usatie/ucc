@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 14:20:32 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 15:03:05 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,6 +121,7 @@ EBNF syntax
 
 program      = stmt*
 stmt         = expr ";"
+             | "return" expr ";"
 expr         = assign
 assign       = equality ("=" assign)?
 equality     = relational ("==" relational | "!=" relational)*
@@ -148,12 +149,16 @@ Node	*parse(Token *tok)
 	return (head);
 }
 
-// stmt = expr ";"
+// stmt = "return" expr ";"
+//      | expr ";"
 Node	*stmt(Token **rest, Token *tok)
 {
 	Node	*node;
 
-	node = new_node_unary(ND_STMT, expr(&tok, tok));
+	if (tok->kind == TK_RETURN)
+		node = new_node_unary(ND_RETURN_STMT, expr(&tok, tok->next));
+	else
+		node = new_node_unary(ND_EXPR_STMT, expr(&tok, tok));
 	expect(tok, ";");
 	*rest = tok->next;
 	return (node);

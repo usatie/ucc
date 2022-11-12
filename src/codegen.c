@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 14:23:36 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 15:03:19 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,12 +61,21 @@ void	codegen(Node *node)
 
 static void	gen_stmt(Node *node)
 {
-	if (node->kind == ND_STMT)
+	if (node->kind == ND_RETURN_STMT)
+	{
+		gen_expr(node->lhs);
+		printf("  pop rax\n");
+		printf("  mov rsp, rbp\n");
+		printf("  pop rbp\n");
+		printf("  ret\n");
+		return ;
+	}
+	if (node->kind == ND_EXPR_STMT)
 	{
 		gen_expr(node->lhs);
 		return ;
 	}
-	error_at(NULL, "Invalid kind");
+	error("Invalid kind");
 }
 
 static void	gen_lval(Node *node)
@@ -177,6 +186,8 @@ static void	gen_expr(Node *node)
 		printf("  setge al\n");
 		printf("  movzb rax, al\n");
 	}
+	else
+		error("Invalid node\n");
 	printf("  push rax\n");
 }
 

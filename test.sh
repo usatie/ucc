@@ -66,5 +66,8 @@ assert 5 "a=1;b=2;a=a+b;b=a+b;"
 # multi-letter local variables assignment
 assert 6 "foo = 1; bar = 2 + 3;foo + bar;"
 assert 12 "foo = 1; bar = 2 + 3; foobar = foo + bar; foo + bar + foobar;"
+# return
+assert 42 "return 42;"
+assert 1 "return 1;return 2; return 3;"
 
 echo OK

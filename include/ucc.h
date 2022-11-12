@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 14:20:48 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/12 15:03:11 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 typedef enum {
 	TK_RESERVED,
+	TK_RETURN,
 	TK_IDENT,
 	TK_NUM,
 	TK_EOF,
@@ -49,9 +50,10 @@ typedef enum {
 	ND_LTE, // <=
 	ND_GT, // >
 	ND_GTE, // >=
-	ND_STMT, // statement
 	ND_ASSIGN, // = assignment
 	ND_LVAR, // local variable
+	ND_EXPR_STMT, // expression statement
+	ND_RETURN_STMT, // return
 }	NodeKind;
 
 typedef struct Node		Node;
