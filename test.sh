@@ -1,10 +1,14 @@
 #!/bin/bash
+cat <<EOF | gcc -xc -c -o tmp2.o -
+int ret_ft() { return 42; }
+int ret_three() { return 3; }
+EOF
 assert() {
 	expected="$1"
 	input="$2"
 
 	./ucc "$input" > tmp.s
-	cc -o tmp tmp.s
+	cc -o tmp tmp.s tmp2.o
 	./tmp
 	actual="$?"
 
@@ -15,6 +19,10 @@ assert() {
 		exit 1
 	fi
 }
+
+# function call
+assert 42 "{ return ret_ft(); }"
+assert 3 "{ return ret_three(); }"
 
 # block
 assert 42 "{ a = 1; b = 1; c = 40; return a + b + c; }"

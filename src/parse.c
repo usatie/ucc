@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/13 09:57:24 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/13 10:46:51 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,7 +134,9 @@ relational   = add ("<" add | "<=" add | ">" add | ">=" add)*
 add          = mul ("+" mul | "-" mul)*
 mul          = unary ("*" unary | "/" unary)*
 unary        = ("+" | "-")? primary
-primary      = num | ident | "(" expr ")"
+primary      = num 
+             | ident ( "(" ")" )?
+			 | "(" expr ")"
 
 */
 
@@ -359,7 +361,9 @@ Node	*unary(Token **rest, Token *tok)
 	return (primary(rest, tok));
 }
 
-// primary = num | ident | "(" expr ")"
+// primary = num 
+//         | ident ( "(" ")" )?
+//         | "(" expr ")"
 Node	*primary(Token **rest, Token *tok)
 {
 	Node	*node;
@@ -378,6 +382,15 @@ Node	*primary(Token **rest, Token *tok)
 	}
 	if (tok->kind == TK_IDENT)
 	{
+		// Function call
+		if (isequal(tok->next, "("))
+		{
+			node = new_node(ND_FUNC_CALL);
+			node->funcname = strndup(tok->str, tok->len);
+			*rest = expect_and_skip(tok->next->next, ")");
+			return (node);
+		}
+		// Variable
 		node = new_node_lvar(tok);
 		*rest = tok->next;
 		return (node);

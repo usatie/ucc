@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/13 09:59:32 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/13 11:35:24 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,31 +167,8 @@ static void	gen_lval(Node *node)
 	error("Expected local variable.");
 }
 
-static void	gen_expr(Node *node)
+static void	gen_binary_expr(Node *node)
 {
-	if (node->kind == ND_NUM)
-	{
-		printf("  push %d\n", node->val);
-		return ;
-	}
-	else if (node->kind == ND_LVAR)
-	{
-		gen_lval(node);
-		printf("  pop rax\n");
-		printf("  mov rax, [rax]\n");
-		printf("  push rax\n");
-		return ;
-	}
-	else if (node->kind == ND_ASSIGN)
-	{
-		gen_lval(node->lhs);
-		gen_expr(node->rhs);
-		printf("  pop rdi # rvalue\n");
-		printf("  pop rax # lvalue\n");
-		printf("  mov [rax], rdi # lvalue = rvalue\n");
-		printf("  push rdi\n");
-		return ;
-	}
 	//printf("# gen(%s)\n", stringize(node));
 	gen_expr(node->lhs);
 	gen_expr(node->rhs);
@@ -261,8 +238,46 @@ static void	gen_expr(Node *node)
 		printf("  movzb rax, al\n");
 	}
 	else
-		error("Invalid node\n");
+		error("Invalid binary expression node\n");
 	printf("  push rax\n");
+}
+
+static void	gen_expr(Node *node)
+{
+	if (node->kind == ND_NUM)
+	{
+		printf("  push %d\n", node->val);
+		return ;
+	}
+	else if (node->kind == ND_LVAR)
+	{
+		gen_lval(node);
+		printf("  pop rax\n");
+		printf("  mov rax, [rax]\n");
+		printf("  push rax\n");
+		return ;
+	}
+	else if (node->kind == ND_ASSIGN)
+	{
+		gen_lval(node->lhs);
+		gen_expr(node->rhs);
+		printf("  pop rdi # rvalue\n");
+		printf("  pop rax # lvalue\n");
+		printf("  mov [rax], rdi # lvalue = rvalue\n");
+		printf("  push rdi\n");
+		return ;
+	}
+	else if (node->kind == ND_FUNC_CALL)
+	{
+		printf("# TODO: allign sp to 16\n");
+		printf("# func call\n");
+		printf("  call %s\n", node->funcname);
+		printf("  push rax\n");
+	}
+	else if (node->lhs && node->rhs)
+		gen_binary_expr(node);
+	else
+		error("Invalid expression node\n");
 }
 
 static int	stack_size(void)

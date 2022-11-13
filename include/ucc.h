@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/13 10:01:41 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/13 10:39:23 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ typedef enum {
 	ND_WHILE_STMT, // while
 	ND_FOR_STMT, // for
 	ND_BLOCK, // {...}
+	ND_FUNC_CALL, // func()
 }	NodeKind;
 
 typedef struct Node		Node;
@@ -77,6 +78,9 @@ struct Node {
 
 	// Block
 	Node		*body;
+
+	// Function call
+	char		*funcname;
 
 	int			val; // only for ND_NUM
 	LVar		*lvar; // only for ND_LVAR

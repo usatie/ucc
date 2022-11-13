@@ -1,5 +1,5 @@
 NAME=ucc
-CFLAGS=-std=c11 -g -static -I include
+CFLAGS=-std=gnu11 -g -static -I include
 SRCS=$(wildcard src/*.c)
 OBJS=$(SRCS:.c=.o)
 
