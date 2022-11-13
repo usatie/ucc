@@ -6,13 +6,14 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 17:21:32 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/13 09:59:32 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h>
 #include "ucc.h"
 
+static void	gen_block(Node *node);
 static void	gen_stmt(Node *node);
 static void	gen_expr(Node *node);
 static int	stack_size(void);
@@ -41,11 +42,7 @@ void	codegen(Node *node)
 	*/
 
 	printf("# Program\n");
-	while (node)
-	{
-		gen_stmt(node);
-		node = node->next;
-	}
+	gen_block(node);
 
 	// Epilogue
 	// The last result is on rax
@@ -53,6 +50,15 @@ void	codegen(Node *node)
 	printf("  mov rsp, rbp\n");
 	printf("  pop rbp\n");
 	printf("  ret\n");
+}
+
+static void	gen_block(Node *node)
+{
+	while (node)
+	{
+		gen_stmt(node);
+		node = node->next;
+	}
 }
 
 static void	gen_stmt(Node *node)
@@ -133,6 +139,14 @@ static void	gen_stmt(Node *node)
 		printf("  jmp .Lstart%d\n", label);
 		printf(".Lend%d:\n", label);
 		label++;
+		return ;
+	}
+	if (node->kind == ND_BLOCK)
+	{
+		printf("# code block start\n");
+		if (node->body)
+			gen_block(node->body);
+		printf("# code block end\n");
 		return ;
 	}
 	error("Invalid kind");

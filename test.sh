@@ -16,6 +16,14 @@ assert() {
 	fi
 }
 
+# block
+assert 42 "{ a = 1; b = 1; c = 40; return a + b + c; }"
+assert 84 "j = 0; for (i = 0; i < 42; i = i + 1) { j = j + 2; } return j;"
+assert 3 "{ {1; {2; } return 3; } }"
+
+# null stmt
+assert 42 "; ; ;; ;; ; return 42; ; ;"
+
 # for
 assert 21 "for (i = 0; i < 21; i = i+1) 1; return i;"
 assert 42 "j = 0; for (i = 0; i < 21; i = i+1) j = j + 2; return j;"

@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 17:23:04 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/13 09:57:24 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,10 +158,12 @@ Node	*parse(Token *tok)
 //      | "if" "(" expr ")" stmt ("else" stmt)?
 //      | "while" "(" expr ")" stmt
 //      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
+//      | "{" stmt* "}"
 //      | expr-stmt
 Node	*stmt(Token **rest, Token *tok)
 {
 	Node	*node;
+	Node	*cur;
 
 	if (isequal(tok, "return"))
 	{
@@ -211,15 +213,32 @@ Node	*stmt(Token **rest, Token *tok)
 		*rest = tok;
 		return (node);
 	}
+	else if (isequal(tok, "{"))
+	{
+		node = new_node(ND_BLOCK);
+		tok = tok->next;
+		if (!isequal(tok, "}"))
+			node->body = stmt(&tok, tok);
+		cur = node->body;
+		while (!isequal(tok, "}"))
+			cur = cur->next = stmt(&tok, tok);
+		*rest = expect_and_skip(tok, "}");
+		return (node);
+	}
 	else
 		return (expr_stmt(rest, tok));
 }
 
-// expr-stmt = expr ";"
+// expr-stmt = expr? ";"
 Node	*expr_stmt(Token **rest, Token *tok)
 {
 	Node	*node;
 
+	if (isequal(tok, ";"))
+	{
+		*rest = tok->next;
+		return (new_node(ND_BLOCK));
+	}
 	node = new_node_unary(ND_EXPR_STMT, expr(&tok, tok));
 	*rest = expect_and_skip(tok, ";");
 	return (node);
