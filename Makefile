@@ -12,7 +12,7 @@ test: $(NAME)
 	./test.sh
 
 clean:
-	rm -f $(NAME) **/*.o *~ tmp*
+	rm -f $(NAME) **/*.o *~ tmp* **/*.out
 
 re: clean $(NAME)
 
