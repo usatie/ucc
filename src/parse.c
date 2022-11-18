@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/18 12:20:04 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/18 12:28:55 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -361,6 +361,8 @@ Node	*unary(Token **rest, Token *tok)
 	return (primary(rest, tok));
 }
 
+// args = expr?
+//      | expr ( "," expr )*
 Node	*parse_args(Token **rest, Token *tok)
 {
 	Node	*head;
@@ -378,6 +380,8 @@ Node	*parse_args(Token **rest, Token *tok)
 	return (head);
 }
 
+// funcall = ident "(" expr? ")"
+//         | ident "(" expr ( "," expr )* ")" 
 Node	*funcall(Token **rest, Token *tok)
 {
 	Node	*node;
@@ -392,7 +396,8 @@ Node	*funcall(Token **rest, Token *tok)
 }
 
 // primary = num 
-//         | ident ( "(" ")" )?
+//         | funcall
+//         | ident
 //         | "(" expr ")"
 Node	*primary(Token **rest, Token *tok)
 {
