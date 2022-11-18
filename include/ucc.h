@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/13 10:39:23 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/18 09:33:28 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,7 @@ struct Node {
 
 	// Function call
 	char		*funcname;
+	Node		*args;
 
 	int			val; // only for ND_NUM
 	LVar		*lvar; // only for ND_LVAR

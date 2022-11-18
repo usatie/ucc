@@ -2,6 +2,9 @@
 cat <<EOF | gcc -xc -c -o tmp2.o -
 int ret_ft() { return 42; }
 int ret_three() { return 3; }
+int	add(int a, int b) { return a + b; }
+int	mul(int a, int b) { return a * b; }
+int	add6(int a, int b, int c, int d, int e, int f) { return a + b + c + d + e + f; }
 EOF
 assert() {
 	expected="$1"
@@ -21,6 +24,13 @@ assert() {
 }
 
 # function call
+assert 8 "{ return add(3, 5); }"
+assert 42 "{ return add(20, 22); }"
+assert 15 "{ return mul(3, 5); }"
+assert 42 "{ return mul(6, 7); }"
+assert 21 "{ return add6(1,2,3,4,5,6); }"
+
+# zero-arty function call
 assert 42 "{ return ret_ft(); }"
 assert 3 "{ return ret_three(); }"
 

@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/13 11:35:24 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/18 09:37:30 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -242,6 +242,8 @@ static void	gen_binary_expr(Node *node)
 	printf("  push rax\n");
 }
 
+static char	*argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
 static void	gen_expr(Node *node)
 {
 	if (node->kind == ND_NUM)
@@ -271,6 +273,14 @@ static void	gen_expr(Node *node)
 	{
 		printf("# TODO: allign sp to 16\n");
 		printf("# func call\n");
+		int	nargs = 0;
+		for (Node *arg = node->args; arg; arg = arg->next)
+		{
+			gen_expr(arg);
+			nargs++;
+		}
+		for (int i = 0; i < nargs; i++)
+			printf("  pop %s\n", argreg[i]);
 		printf("  call %s\n", node->funcname);
 		printf("  push rax\n");
 	}

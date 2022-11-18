@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/13 10:46:51 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/18 12:20:04 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -361,6 +361,36 @@ Node	*unary(Token **rest, Token *tok)
 	return (primary(rest, tok));
 }
 
+Node	*parse_args(Token **rest, Token *tok)
+{
+	Node	*head;
+	Node	*cur;
+
+	head = expr(&tok, tok);
+	cur = head;
+	while (!isequal(tok, ")"))
+	{
+		tok = expect_and_skip(tok, ",");
+		cur->next = expr(&tok, tok);
+		cur = cur->next;
+	}
+	*rest = tok;
+	return (head);
+}
+
+Node	*funcall(Token **rest, Token *tok)
+{
+	Node	*node;
+
+	node = new_node(ND_FUNC_CALL);
+	node->funcname = strndup(tok->str, tok->len);
+	tok = tok->next->next;
+	if (!isequal(tok, ")"))
+		node->args = parse_args(&tok, tok);
+	*rest = expect_and_skip(tok, ")");
+	return (node);
+}
+
 // primary = num 
 //         | ident ( "(" ")" )?
 //         | "(" expr ")"
@@ -384,12 +414,7 @@ Node	*primary(Token **rest, Token *tok)
 	{
 		// Function call
 		if (isequal(tok->next, "("))
-		{
-			node = new_node(ND_FUNC_CALL);
-			node->funcname = strndup(tok->str, tok->len);
-			*rest = expect_and_skip(tok->next->next, ")");
-			return (node);
-		}
+			return (funcall(rest, tok));
 		// Variable
 		node = new_node_lvar(tok);
 		*rest = tok->next;
