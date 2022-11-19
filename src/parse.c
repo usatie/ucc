@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/18 12:28:55 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/19 12:35:24 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,8 @@ static Node	*new_node_lvar(Token *tok)
 EBNF syntax
 (Exetnded Backus-Naur form)
 
-program      = stmt*
+program      = funcdecl*
+funcdecl     = ident "(" ident* ")" "{" stmt* "}"
 stmt         = expr-stmt
              | "return" expr ";"
 			 | "if" "(" expr ")" stmt ("else" stmt)?
@@ -135,9 +136,11 @@ add          = mul ("+" mul | "-" mul)*
 mul          = unary ("*" unary | "/" unary)*
 unary        = ("+" | "-")? primary
 primary      = num 
-             | ident ( "(" ")" )?
+             | funcall
+             | ident
 			 | "(" expr ")"
-
+funcall      = ident "(" expr? ")"
+             | ident "(" expr ( "," expr )* ")" 
 */
 
 // program = stmt*
