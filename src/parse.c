@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/20 11:03:04 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/20 11:13:35 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,8 +183,7 @@ Node	*funcdecl(Token **rest, Token *tok)
 	if (!isequal(tok, ")"))
 	{
 		expect_kind(tok, TK_IDENT);
-		arg = new_node_lvar(tok);
-		node->args = arg;
+		node->args = arg = new_node_lvar(tok);
 		tok = tok->next;
 	}
 	while (!isequal(tok, ")"))
@@ -192,6 +191,7 @@ Node	*funcdecl(Token **rest, Token *tok)
 		tok = expect_and_skip(tok, ",");
 		expect_kind(tok, TK_IDENT);
 		arg = arg->next = new_node_lvar(tok);
+		tok = tok->next;
 	}
 	tok = expect_and_skip(tok, ")");
 	node->body = block(rest, tok);

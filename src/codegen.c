@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/20 11:04:01 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/20 16:20:40 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ static void	gen_block(Node *node);
 static void	gen_stmt(Node *node);
 static void	gen_expr(Node *node);
 static int	stack_size(void);
+static char	*argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 // codegen.c
 void	codegen(Node *node)
@@ -37,11 +38,24 @@ static void	gen_func(Node *node)
 	printf("%s:\n", node->funcname);
 
 	// prologue
-	// Allocate local variables
 	printf("# Prologue\n");
 	printf("  push rbp\n");
 	printf("  mov rbp, rsp\n");
+	// Allocate local variables
+	printf("# Allocate local variables\n");
+	printf("  push rbp\n");
 	printf("  sub rsp, %d\n", stack_size());
+	// Setup args
+	Node	*arg = node->args;
+	int		nargs = 0;
+	while (arg)
+	{
+		printf("  mov rax, rbp\n");
+		printf("  sub rax, %d\n", arg->lvar->offset);
+		printf("  mov [rax], %s\n", argreg[nargs]);
+		arg = arg->next;
+		nargs++;
+	}
 	/*
 	  If needed to zero initialize all local variables
 	  This is also ok?
@@ -251,8 +265,6 @@ static void	gen_binary_expr(Node *node)
 		error("Invalid binary expression node\n");
 	printf("  push rax\n");
 }
-
-static char	*argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 static void	gen_expr(Node *node)
 {
