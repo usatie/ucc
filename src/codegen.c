@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/20 16:20:40 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/20 18:16:46 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -301,7 +301,7 @@ static void	gen_expr(Node *node)
 			gen_expr(arg);
 			nargs++;
 		}
-		for (int i = 0; i < nargs; i++)
+		for (int i = nargs - 1; i >= 0; i--)
 			printf("  pop %s\n", argreg[i]);
 		printf("  call %s\n", node->funcname);
 		printf("  push rax\n");

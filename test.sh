@@ -26,6 +26,7 @@ assert() {
 # function declare with args
 assert 6 "main() { add3(1, 2, 3); } add3(a, b, c) { return a + b + c; }"
 assert 55 "main() { fib(10); } fib(n) { if (n <= 1) return n; else return fib(n-1) + fib(n-2); }"
+assert 3 "main() { sub(10, 7); } sub(a, b) { return (a - b); }"
 
 # function declare
 assert 42 "main() { return 42; }"
