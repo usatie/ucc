@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/19 12:35:24 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/20 11:03:04 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,15 @@ static Token	*expect_and_skip(const Token *tok, const char *op)
 {
 	if (!isequal(tok, op))
 		error_at(tok->str, "expected '%s', but not.", op);
+	return (tok->next);
+}
+
+// Ensure that `token` matches `kind`.
+// and returns the next token.
+static Token	*expect_kind(const Token *tok, TokenKind kind)
+{
+	if (tok->kind != kind)
+		error_at(tok->str, "expected '%d', but not.", kind);
 	return (tok->next);
 }
 
@@ -121,12 +130,14 @@ EBNF syntax
 (Exetnded Backus-Naur form)
 
 program      = funcdecl*
-funcdecl     = ident "(" ident* ")" "{" stmt* "}"
+funcdecl     = ident "(" ident* ")" block
+block        = "{" stmt* "}"
 stmt         = expr-stmt
              | "return" expr ";"
 			 | "if" "(" expr ")" stmt ("else" stmt)?
 			 | "while" "(" expr ")" stmt
              | "for" "(" expr? ";" expr? ";" expr? ")" stmt
+             | block
 expr-stmt    = expr ";"
 expr         = assign
 assign       = equality ("=" assign)?
@@ -143,32 +154,77 @@ funcall      = ident "(" expr? ")"
              | ident "(" expr ( "," expr )* ")" 
 */
 
-// program = stmt*
+// program = funcdecl*
 Node	*parse(Token *tok)
 {
 	Node	*head;
 	Node	*cur;
 
-	head = stmt(&tok, tok);
+	head = funcdecl(&tok, tok);
 	cur = head;
 	while (!at_eof(tok))
 	{
-		cur->next = stmt(&tok, tok);
+		cur->next = funcdecl(&tok, tok);
 		cur = cur->next;
 	}
 	return (head);
+}
+
+// funcdecl = ident "(" ident* ")" block
+Node	*funcdecl(Token **rest, Token *tok)
+{
+	Node	*node;
+	Node	*arg;
+
+	expect_kind(tok, TK_IDENT);
+	node = new_node(ND_FUNC_DECL);
+	node->funcname = strndup(tok->str, tok->len);
+	tok = expect_and_skip(tok->next, "(");
+	if (!isequal(tok, ")"))
+	{
+		expect_kind(tok, TK_IDENT);
+		arg = new_node_lvar(tok);
+		node->args = arg;
+		tok = tok->next;
+	}
+	while (!isequal(tok, ")"))
+	{
+		tok = expect_and_skip(tok, ",");
+		expect_kind(tok, TK_IDENT);
+		arg = arg->next = new_node_lvar(tok);
+	}
+	tok = expect_and_skip(tok, ")");
+	node->body = block(rest, tok);
+	return (node);
+}
+
+// block = "{" stmt* "}"
+Node	*block(Token **rest, Token *tok)
+{
+	Node	*node;
+	Node	*cur;
+
+	tok = expect_and_skip(tok, "{");
+	node = new_node(ND_BLOCK);
+	if (!isequal(tok, "}"))
+	{
+		cur = node->body = stmt(&tok, tok);
+		while (!isequal(tok, "}"))
+			cur = cur->next = stmt(&tok, tok);
+	}
+	*rest = expect_and_skip(tok, "}");
+	return (node);
 }
 
 // stmt = "return" expr ";"
 //      | "if" "(" expr ")" stmt ("else" stmt)?
 //      | "while" "(" expr ")" stmt
 //      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
-//      | "{" stmt* "}"
+//      | block
 //      | expr-stmt
 Node	*stmt(Token **rest, Token *tok)
 {
 	Node	*node;
-	Node	*cur;
 
 	if (isequal(tok, "return"))
 	{
@@ -219,17 +275,7 @@ Node	*stmt(Token **rest, Token *tok)
 		return (node);
 	}
 	else if (isequal(tok, "{"))
-	{
-		node = new_node(ND_BLOCK);
-		tok = tok->next;
-		if (!isequal(tok, "}"))
-			node->body = stmt(&tok, tok);
-		cur = node->body;
-		while (!isequal(tok, "}"))
-			cur = cur->next = stmt(&tok, tok);
-		*rest = expect_and_skip(tok, "}");
-		return (node);
-	}
+		return (block(rest, tok));
 	else
 		return (expr_stmt(rest, tok));
 }

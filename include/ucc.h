@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/18 09:33:28 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/20 09:26:41 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ typedef enum {
 	ND_FOR_STMT, // for
 	ND_BLOCK, // {...}
 	ND_FUNC_CALL, // func()
+	ND_FUNC_DECL, // func() {}
 }	NodeKind;
 
 typedef struct Node		Node;
@@ -79,7 +80,7 @@ struct Node {
 	// Block
 	Node		*body;
 
-	// Function call
+	// Function call or decl
 	char		*funcname;
 	Node		*args;
 
@@ -105,6 +106,8 @@ Token	*tokenize(char *p);
 // parser.c
 // syntax parser
 Node	*parse(Token *tok);
+Node	*block(Token **rest, Token *tok);
+Node	*funcdecl(Token **rest, Token *tok);
 Node	*stmt(Token **rest, Token *tok);
 Node	*expr_stmt(Token **rest, Token *tok);
 Node	*expr(Token **rest, Token *tok);

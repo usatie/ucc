@@ -6,13 +6,14 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/18 09:37:30 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/20 11:04:01 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h>
 #include "ucc.h"
 
+static void	gen_func(Node *node);
 static void	gen_block(Node *node);
 static void	gen_stmt(Node *node);
 static void	gen_expr(Node *node);
@@ -23,8 +24,17 @@ void	codegen(Node *node)
 {
 	// code gen first part
 	printf(".intel_syntax noprefix\n");
-	printf(".globl main\n");
-	printf("main:\n");
+	while (node)
+	{
+		gen_func(node);
+		node = node->next;
+	}
+}
+
+static void	gen_func(Node *node)
+{
+	printf(".globl %s\n", node->funcname);
+	printf("%s:\n", node->funcname);
 
 	// prologue
 	// Allocate local variables
@@ -42,7 +52,7 @@ void	codegen(Node *node)
 	*/
 
 	printf("# Program\n");
-	gen_block(node);
+	gen_block(node->body);
 
 	// Epilogue
 	// The last result is on rax
