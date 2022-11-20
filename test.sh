@@ -27,6 +27,9 @@ assert() {
 assert 6 "main() { add3(1, 2, 3); } add3(a, b, c) { return a + b + c; }"
 assert 55 "main() { fib(10); } fib(n) { if (n <= 1) return n; else return fib(n-1) + fib(n-2); }"
 assert 3 "main() { sub(10, 7); } sub(a, b) { return (a - b); }"
+assert 0 "main() { isprime(10); } isprime(n) { i = 2; while (n >= i * i) { if (_mod(n, i) == 0) return 0; i = i + 1; } return 1; } _mod(n, m) { return (n - (n / m) * m); }"
+assert 1 "main() { isprime(11); } isprime(n) { i = 2; while (n >= i * i) { if (_mod(n, i) == 0) return 0; i = i + 1; } return 1; } _mod(n, m) { return (n - (n / m) * m); }"
+assert 251 "main() { maxprime(255); } maxprime(n) { max = 0; i = 2; while (i <= n) { if (isprime(i)) max = i; i = i + 1; } return max;} isprime(n) { i = 2; while (n >= i * i) { if (_mod(n, i) == 0) return 0; i = i + 1; } return 1; } _mod(n, m) { return (n - (n / m) * m); }"
 
 # function declare
 assert 42 "main() { return 42; }"
