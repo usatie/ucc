@@ -23,6 +23,12 @@ assert() {
 	fi
 }
 
+# unary * and &
+assert 42 "main() { a = 42; return *(&a); }"
+assert 42 "main() { a = 42; b = &a; return *b; }"
+assert 21 "main() { a = 42; b = 21; return *(&b); }"
+assert 42 "main() { a = 42; b = 21; return *(&b + 8); }"
+
 # function declare with args
 assert 6 "main() { add3(1, 2, 3); } add3(a, b, c) { return a + b + c; }"
 assert 55 "main() { fib(10); } fib(n) { if (n <= 1) return n; else return fib(n-1) + fib(n-2); }"

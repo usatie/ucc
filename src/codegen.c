@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/20 18:30:09 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/21 09:59:12 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -307,6 +307,15 @@ static void	gen_expr(Node *node)
 		for (int i = nargs - 1; i >= 0; i--)
 			printf("  pop %s\n", argreg[i]);
 		printf("  call %s\n", node->funcname);
+		printf("  push rax\n");
+	}
+	else if (node->kind == ND_ADDR)
+		gen_lval(node->lhs);
+	else if (node->kind == ND_DEREF)
+	{
+		gen_expr(node->lhs);
+		printf("  pop rax\n");
+		printf("  mov rax, [rax]\n");
 		printf("  push rax\n");
 	}
 	else if (node->lhs && node->rhs)

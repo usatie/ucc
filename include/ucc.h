@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/20 09:26:41 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/21 09:52:54 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,8 @@ typedef enum {
 	ND_BLOCK, // {...}
 	ND_FUNC_CALL, // func()
 	ND_FUNC_DECL, // func() {}
+	ND_ADDR, // &
+	ND_DEREF, // *
 }	NodeKind;
 
 typedef struct Node		Node;
@@ -118,6 +120,7 @@ Node	*add(Token **rest, Token *tok);
 Node	*mul(Token **rest, Token *tok);
 Node	*unary(Token **rest, Token *tok);
 Node	*primary(Token **rest, Token *tok);
+Node	*lvar(Token **rest, Token *tok);
 
 // codegen.c
 void	codegen(Node *node);

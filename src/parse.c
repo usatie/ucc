@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/20 11:13:35 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/21 09:54:20 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -397,7 +397,7 @@ Node	*mul(Token **rest, Token *tok)
 	}
 }
 
-// unary = ("+" | "-")? primary
+// unary = ("+" | "-" | "*" | "&")? primary
 Node	*unary(Token **rest, Token *tok)
 {
 	if (isequal(tok, "+"))
@@ -407,6 +407,10 @@ Node	*unary(Token **rest, Token *tok)
 				ND_SUB,
 				new_node_num(0),
 				primary(rest, tok->next)));
+	if (isequal(tok, "*"))
+		return (new_node_unary(ND_DEREF, primary(rest, tok->next)));
+	if (isequal(tok, "&"))
+		return (new_node_unary(ND_ADDR, primary(rest, tok->next)));
 	return (primary(rest, tok));
 }
 
@@ -470,9 +474,8 @@ Node	*primary(Token **rest, Token *tok)
 		if (isequal(tok->next, "("))
 			return (funcall(rest, tok));
 		// Variable
-		node = new_node_lvar(tok);
 		*rest = tok->next;
-		return (node);
+		return (new_node_lvar(tok));
 	}
 	error_at(tok->str, "Invalid token.");
 }
