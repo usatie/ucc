@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/21 09:54:20 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/23 18:28:58 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,14 +130,16 @@ EBNF syntax
 (Exetnded Backus-Naur form)
 
 program      = funcdecl*
-funcdecl     = ident "(" ident* ")" block
+funcdecl     = "int" ident "(" ( "int" ident )* ")" block
 block        = "{" stmt* "}"
 stmt         = expr-stmt
+             | vardecl-stmt
              | "return" expr ";"
 			 | "if" "(" expr ")" stmt ("else" stmt)?
 			 | "while" "(" expr ")" stmt
              | "for" "(" expr? ";" expr? ";" expr? ")" stmt
              | block
+vardecl-stmt = "int" ident ";"
 expr-stmt    = expr ";"
 expr         = assign
 assign       = equality ("=" assign)?
@@ -170,18 +172,20 @@ Node	*parse(Token *tok)
 	return (head);
 }
 
-// funcdecl = ident "(" ident* ")" block
+// funcdecl = "int" ident "(" ( "int" ident )* ")" block
 Node	*funcdecl(Token **rest, Token *tok)
 {
 	Node	*node;
 	Node	*arg;
 
+	tok = expect_and_skip(tok, "int");
 	expect_kind(tok, TK_IDENT);
 	node = new_node(ND_FUNC_DECL);
 	node->funcname = strndup(tok->str, tok->len);
 	tok = expect_and_skip(tok->next, "(");
 	if (!isequal(tok, ")"))
 	{
+		tok = expect_and_skip(tok, "int");
 		expect_kind(tok, TK_IDENT);
 		node->args = arg = new_node_lvar(tok);
 		tok = tok->next;
@@ -189,6 +193,7 @@ Node	*funcdecl(Token **rest, Token *tok)
 	while (!isequal(tok, ")"))
 	{
 		tok = expect_and_skip(tok, ",");
+		tok = expect_and_skip(tok, "int");
 		expect_kind(tok, TK_IDENT);
 		arg = arg->next = new_node_lvar(tok);
 		tok = tok->next;
@@ -222,6 +227,7 @@ Node	*block(Token **rest, Token *tok)
 //      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //      | block
 //      | expr-stmt
+//      | vardecl-stmt
 Node	*stmt(Token **rest, Token *tok)
 {
 	Node	*node;

@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 12:01:38 by susami            #+#    #+#             */
-/*   Updated: 2022/11/23 18:20:30 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/23 18:21:36 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ static bool	is_match_keyword(char *p, char *kw)
 
 static bool	is_keyword(char *p)
 {
-	static char		*kw[] = {"return", "if", "else", "while", "for"};
+	static char		*kw[] = {"return", "if", "else", "while", "for", "int"};
 	unsigned long	i;
 
 	i = 0;
