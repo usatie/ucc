@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/23 18:28:58 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/23 21:44:33 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,15 +98,13 @@ static LVar	*find_lvar(const Token *tok)
 	return (NULL);
 }
 
-static Node	*new_node_lvar(Token *tok)
+static LVar	*new_lvar(const Token *tok)
 {
 	LVar	*lvar;
-	Node	*node;
 
-	node = new_node(ND_LVAR);
 	lvar = find_lvar(tok);
 	if (lvar)
-		node->lvar = lvar;
+		error_at(tok->str, "Already declared identifier");
 	else
 	{
 		lvar = calloc(1, sizeof(LVar));
@@ -117,9 +115,21 @@ static Node	*new_node_lvar(Token *tok)
 			lvar->offset = 8;
 		else
 			lvar->offset = ctx.lvars->offset + 8;
-		node->lvar = lvar;
 		ctx.lvars = lvar;
 	}
+	return (lvar);
+}
+
+static Node	*new_node_lvar(Token *tok)
+{
+	LVar	*lvar;
+	Node	*node;
+
+	node = new_node(ND_LVAR);
+	lvar = find_lvar(tok);
+	if (lvar == NULL)
+		error_at(tok->str, "Undeclared identifier");
+	node->lvar = lvar;
 	return (node);
 }
 
@@ -133,13 +143,12 @@ program      = funcdecl*
 funcdecl     = "int" ident "(" ( "int" ident )* ")" block
 block        = "{" stmt* "}"
 stmt         = expr-stmt
-             | vardecl-stmt
+             | "int" ident ";"
              | "return" expr ";"
 			 | "if" "(" expr ")" stmt ("else" stmt)?
 			 | "while" "(" expr ")" stmt
              | "for" "(" expr? ";" expr? ";" expr? ")" stmt
              | block
-vardecl-stmt = "int" ident ";"
 expr-stmt    = expr ";"
 expr         = assign
 assign       = equality ("=" assign)?
@@ -157,10 +166,10 @@ funcall      = ident "(" expr? ")"
 */
 
 // program = funcdecl*
-Node	*parse(Token *tok)
+Function	*parse(Token *tok)
 {
-	Node	*head;
-	Node	*cur;
+	Function	*head;
+	Function	*cur;
 
 	head = funcdecl(&tok, tok);
 	cur = head;
@@ -173,21 +182,21 @@ Node	*parse(Token *tok)
 }
 
 // funcdecl = "int" ident "(" ( "int" ident )* ")" block
-Node	*funcdecl(Token **rest, Token *tok)
+Function	*funcdecl(Token **rest, Token *tok)
 {
-	Node	*node;
-	Node	*arg;
+	Function	*func;
 
+	func = calloc(sizeof(Function), 1);
+	ctx.lvars = NULL;
 	tok = expect_and_skip(tok, "int");
 	expect_kind(tok, TK_IDENT);
-	node = new_node(ND_FUNC_DECL);
-	node->funcname = strndup(tok->str, tok->len);
+	func->name = strndup(tok->str, tok->len);
 	tok = expect_and_skip(tok->next, "(");
 	if (!isequal(tok, ")"))
 	{
 		tok = expect_and_skip(tok, "int");
 		expect_kind(tok, TK_IDENT);
-		node->args = arg = new_node_lvar(tok);
+		new_lvar(tok);
 		tok = tok->next;
 	}
 	while (!isequal(tok, ")"))
@@ -195,12 +204,14 @@ Node	*funcdecl(Token **rest, Token *tok)
 		tok = expect_and_skip(tok, ",");
 		tok = expect_and_skip(tok, "int");
 		expect_kind(tok, TK_IDENT);
-		arg = arg->next = new_node_lvar(tok);
+		new_lvar(tok);
 		tok = tok->next;
 	}
 	tok = expect_and_skip(tok, ")");
-	node->body = block(rest, tok);
-	return (node);
+	func->args = ctx.lvars;
+	func->body = block(rest, tok);
+	func->locals = ctx.lvars;
+	return (func);
 }
 
 // block = "{" stmt* "}"
@@ -226,8 +237,8 @@ Node	*block(Token **rest, Token *tok)
 //      | "while" "(" expr ")" stmt
 //      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //      | block
+//      | "int" ident ";"
 //      | expr-stmt
-//      | vardecl-stmt
 Node	*stmt(Token **rest, Token *tok)
 {
 	Node	*node;
@@ -282,6 +293,13 @@ Node	*stmt(Token **rest, Token *tok)
 	}
 	else if (isequal(tok, "{"))
 		return (block(rest, tok));
+	else if (isequal(tok, "int"))
+	{
+		new_lvar(tok->next);
+		node = new_node(ND_BLOCK);
+		*rest = tok->next->next;
+		return (node);
+	}
 	else
 		return (expr_stmt(rest, tok));
 }

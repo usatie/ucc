@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:52:42 by susami            #+#    #+#             */
-/*   Updated: 2022/11/12 14:18:11 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/23 21:10:39 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,8 @@ void	error_at(const char *loc, const char *fmt, ...)
 // main
 int	main(int argc, char *argv[])
 {
-	Token	*token;
-	Node	*node;
+	Token		*token;
+	Function	*func;
 
 	// argparse
 	if (argc != 2)
@@ -61,11 +61,11 @@ int	main(int argc, char *argv[])
 	printf("# tokenize finished.\n");
 
 	// parse
-	node = parse(token);
+	func = parse(token);
 	printf("# parse finished.\n");
 
 	// code gen
-	codegen(node);
+	codegen(func);
 	printf("# codegen finished.\n");
 
 	return (0);

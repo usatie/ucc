@@ -23,19 +23,25 @@ assert() {
 	fi
 }
 
+# same local var name
+assert 42 "int main() { int a; a = 42; foo(1); return a; } int foo(int a){ a = a + 1; return a; }"
+assert 42 "int main() { int a; a = 42; foo(); return a; } int foo(){ int a; a = 1; return a; }"
+assert 42 "int main() { int a; int b; return foo(); } int foo(){ int b; int a; a = 1; b = 42; return b; }"
+assert 1 "int main() { int a; int b; return foo(); } int foo(){ int b; int a; a = 1; b = 42; return a; }"
+
 # unary * and &
-assert 42  "int main() { a = 42; return *(&a); }"
-assert 42  "int main() { a = 42; b = &a; return *b; }"
-assert 21  "int main() { a = 42; b = 21; return *(&b); }"
-assert 42  "int main() { a = 42; b = 21; return *(&b + 8); }"
+assert 42  "int main() { int a; a = 42; return *(&a); }"
+assert 42  "int main() { int a; int b; a = 42; b = &a; return *b; }"
+assert 21  "int main() { int a; int b; a = 42; b = 21; return *(&b); }"
+assert 42  "int main() { int a; int b; a = 42; b = 21; return *(&b + 8); }"
 
 # function declare with args
 assert 6   "int main() { add3(1, 2, 3); } int add3(int a, int b, int c) { return a + b + c; }"
 assert 55  "int main() { fib(10); } int fib(int n) { if (n <= 1) return n; else return fib(n-1) + fib(n-2); }"
 assert 3   "int main() { sub(10, 7); } int sub(int a, int b) { return (a - b); }"
-assert 0   "int main() { isprime(10); } int isprime(int n) { i = 2; while (n >= i * i) { if (_mod(n, i) == 0) return 0; i = i + 1; } return 1; } int _mod(int n, int m) { return (n - (n / m) * m); }"
-assert 1   "int main() { isprime(11); } int isprime(int n) { i = 2; while (n >= i * i) { if (_mod(n, i) == 0) return 0; i = i + 1; } return 1; } int _mod(int n, int m) { return (n - (n / m) * m); }"
-assert 251 "int main() { maxprime(255); } int maxprime(int n) { max = 0; i = 2; while (i <= n) { if (isprime(i)) max = i; i = i + 1; } return max;} int isprime(int n) { i = 2; while (n >= i * i) { if (_mod(n, i) == 0) return 0; i = i + 1; } return 1; } int _mod(int n, int m) { return (n - (n / m) * m); }"
+assert 0   "int main() { isprime(10); } int isprime(int n) { int i; i = 2; while (n >= i * i) { if (_mod(n, i) == 0) return 0; i = i + 1; } return 1; } int _mod(int n, int m) { return (n - (n / m) * m); }"
+assert 1   "int main() { isprime(11); } int isprime(int n) { int i; i = 2; while (n >= i * i) { if (_mod(n, i) == 0) return 0; i = i + 1; } return 1; } int _mod(int n, int m) { return (n - (n / m) * m); }"
+assert 251 "int main() { maxprime(255); } int maxprime(int n) { int max; int i; max = 0; i = 2; while (i <= n) { if (isprime(i)) max = i; i = i + 1; } return max;} int isprime(int n) { int i; i = 2; while (n >= i * i) { if (_mod(n, i) == 0) return 0; i = i + 1; } return 1; } int _mod(int n, int m) { return (n - (n / m) * m); }"
 
 # function declare
 assert 42  "int main() { return 42; }"
@@ -53,20 +59,20 @@ assert 42  "int main() { return ret_ft(); }"
 assert 3   "int main() { return ret_three(); }"
 
 # block
-assert 42  "int main() { a = 1; b = 1; c = 40; return a + b + c; }"
-assert 84  "int main() { j = 0; for (i = 0; i < 42; i = i + 1) { j = j + 2; } return j; }"
+assert 42  "int main() { int a; int b; int c; a = 1; b = 1; c = 40; return a + b + c; }"
+assert 84  "int main() { int j; int i; j = 0; for (i = 0; i < 42; i = i + 1) { j = j + 2; } return j; }"
 assert 3   "int main() { {1; {2; } return 3; } }"
 
 # null stmt
 assert 42  "int main() {; ; ;; ;; ; return 42; ; ;}"
 
 # for
-assert 21  "int main() {for (i = 0; i < 21; i = i+1) 1; return i;}"
-assert 42  "int main() {j = 0; for (i = 0; i < 21; i = i+1) j = j + 2; return j;}"
+assert 21  "int main() { int i; for (i = 0; i < 21; i = i+1) 1; return i;}"
+assert 42  "int main() { int i; int j; j = 0; for (i = 0; i < 21; i = i+1) j = j + 2; return j;}"
 assert 3   "int main() {for (;;) return 3; 1;}"
 
 # while
-assert 42  "int main() {i = 0; while (i < 42) i = i + 1; return i;}"
+assert 42  "int main() { int i; i = 0; while (i < 42) i = i + 1; return i;}"
 
 # if
 assert 42  "int main() {if (1) return 42; return 1;}"
@@ -122,11 +128,11 @@ assert 0 "int main() {41>=42;}"
 # multiple statements
 assert 3 "int main() {1;2;3;}"
 # one-letter local variables assignment
-assert 3 "int main() {a=1;b=2;a+b;}"
-assert 5 "int main() {a=1;b=2;a=a+b;b=a+b;}"
+assert 3 "int main() { int a; int b; int c; a=1;b=2;a+b;}"
+assert 5 "int main() { int a; int b; a=1;b=2;a=a+b;b=a+b;}"
 # multi-letter local variables assignment
-assert 6 "int main() {foo = 1; bar = 2 + 3;foo + bar;}"
-assert 12 "int main() {foo = 1; bar = 2 + 3; foobar = foo + bar; foo + bar + foobar;}"
+assert 6 "int main() { int foo; int bar; foo = 1; bar = 2 + 3;foo + bar;}"
+assert 12 "int main() { int foo; int bar; int foobar; foo = 1; bar = 2 + 3; foobar = foo + bar; foo + bar + foobar;}"
 # return
 assert 42 "int main() {return 42;}"
 assert 1 "int main() {return 1;return 2; return 3;}"

@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/23 18:20:17 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/23 21:49:19 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,18 @@ struct Node {
 	LVar		*lvar; // only for ND_LVAR
 };
 
+typedef struct Function	Function;
+struct Function {
+	Function	*next;
+
+	char		*name;
+	LVar		*args;
+
+	Node		*body;
+	LVar		*locals;
+	int			stack_size;
+};
+
 typedef struct context	context;
 struct context {
 	char	*user_input;
@@ -99,29 +111,29 @@ struct context {
 extern context			ctx;
 
 // error.c
-void	error(const char *fmt, ...) __attribute__((noreturn));
-void	error_at(const char *loc, const char *fmt, ...)\
-			__attribute__((noreturn));
+void		error(const char *fmt, ...) __attribute__((noreturn));
+void		error_at(const char *loc, const char *fmt, ...)\
+				__attribute__((noreturn));
 
 // tokenize.c
-Token	*tokenize(char *p);
+Token		*tokenize(char *p);
 // parser.c
 // syntax parser
-Node	*parse(Token *tok);
-Node	*block(Token **rest, Token *tok);
-Node	*funcdecl(Token **rest, Token *tok);
-Node	*stmt(Token **rest, Token *tok);
-Node	*expr_stmt(Token **rest, Token *tok);
-Node	*expr(Token **rest, Token *tok);
-Node	*assign(Token **rest, Token *tok);
-Node	*equality(Token **rest, Token *tok);
-Node	*relational(Token **rest, Token *tok);
-Node	*add(Token **rest, Token *tok);
-Node	*mul(Token **rest, Token *tok);
-Node	*unary(Token **rest, Token *tok);
-Node	*primary(Token **rest, Token *tok);
-Node	*lvar(Token **rest, Token *tok);
+Function	*parse(Token *tok);
+Function	*funcdecl(Token **rest, Token *tok);
+Node		*block(Token **rest, Token *tok);
+Node		*stmt(Token **rest, Token *tok);
+Node		*expr_stmt(Token **rest, Token *tok);
+Node		*expr(Token **rest, Token *tok);
+Node		*assign(Token **rest, Token *tok);
+Node		*equality(Token **rest, Token *tok);
+Node		*relational(Token **rest, Token *tok);
+Node		*add(Token **rest, Token *tok);
+Node		*mul(Token **rest, Token *tok);
+Node		*unary(Token **rest, Token *tok);
+Node		*primary(Token **rest, Token *tok);
+Node		*lvar(Token **rest, Token *tok);
 
 // codegen.c
-void	codegen(Node *node);
+void		codegen(Function *func);
 #endif

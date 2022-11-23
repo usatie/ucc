@@ -6,14 +6,14 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/21 09:59:12 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/23 21:54:48 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h>
 #include "ucc.h"
 
-static void	gen_func(Node *node);
+static void	gen_func(Function *func);
 static void	gen_block(Node *node);
 static void	gen_stmt(Node *node);
 static void	gen_expr(Node *node);
@@ -21,21 +21,21 @@ static int	stack_size(void);
 static char	*argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 // codegen.c
-void	codegen(Node *node)
+void	codegen(Function *func)
 {
 	// code gen first part
 	printf(".intel_syntax noprefix\n");
-	while (node)
+	while (func)
 	{
-		gen_func(node);
-		node = node->next;
+		gen_func(func);
+		func = func->next;
 	}
 }
 
-static void	gen_func(Node *node)
+static void	gen_func(Function *func)
 {
-	printf(".globl %s\n", node->funcname);
-	printf("%s:\n", node->funcname);
+	printf(".globl %s\n", func->name);
+	printf("%s:\n", func->name);
 
 	// prologue
 	printf("# Prologue\n");
@@ -46,15 +46,13 @@ static void	gen_func(Node *node)
 	printf("  push rbp\n");
 	printf("  sub rsp, %d\n", stack_size());
 	// Setup args
-	Node	*arg = node->args;
-	int		nargs = 0;
+	LVar	*arg = func->args;
 	while (arg)
 	{
 		printf("  mov rax, rbp\n");
-		printf("  sub rax, %d\n", arg->lvar->offset);
-		printf("  mov [rax], %s\n", argreg[nargs]);
+		printf("  sub rax, %d\n", arg->offset);
+		printf("  mov [rax], %s\n", argreg[(arg->offset / 8) - 1]);
 		arg = arg->next;
-		nargs++;
 	}
 	/*
 	  If needed to zero initialize all local variables
@@ -66,7 +64,7 @@ static void	gen_func(Node *node)
 	*/
 
 	printf("# Program\n");
-	gen_block(node->body);
+	gen_block(func->body);
 
 	// Epilogue
 	// The last result is on rax
