@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 12:01:38 by susami            #+#    #+#             */
-/*   Updated: 2022/11/21 10:00:03 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/23 18:20:30 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ Token	*tokenize(char *p)
 		if (startswith(p, "==") || startswith(p, "!=")
 			|| startswith(p, "<=") || startswith(p, ">="))
 		{
-			cur = cur->next = new_token(TK_RESERVED, p);
+			cur = cur->next = new_token(TK_PUNCT, p);
 			cur->len = 2;
 			p += 2;
 			continue ;
@@ -104,7 +104,7 @@ Token	*tokenize(char *p)
 		// Single-letter punctuator
 		if (strchr("+-*/()<>;={},&", *p))
 		{
-			cur = cur->next = new_token(TK_RESERVED, p++);
+			cur = cur->next = new_token(TK_PUNCT, p++);
 			cur->len = 1;
 			continue ;
 		}

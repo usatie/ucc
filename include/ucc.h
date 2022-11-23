@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/21 09:52:54 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/23 18:20:17 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,11 @@
 # define UCC_H
 
 typedef enum {
-	TK_RESERVED,
-	TK_KEYWORD,
-	TK_IDENT,
-	TK_NUM,
-	TK_EOF,
+	TK_PUNCT, // Punctuators
+	TK_KEYWORD, // Keywords
+	TK_IDENT, // Identifiers
+	TK_NUM, // Numeric literals
+	TK_EOF, // End-of-file markers
 }	TokenKind;
 
 typedef struct Token	Token;
