@@ -26,6 +26,12 @@ assert() {
 # invalid type error
 # asserterror "int main() { int a; int b; b = a; }"
 
+# ptr arithmetic
+assert 42 "int main() { int a; int b; int *p; a = 1; b = 2; p = &b; p = p + 8; *p = 42; return a; }"
+assert 2 "int main() { int a; int b; int *p; a = 1; b = 2; p = &b; p = p + 8; *p = 42; return b; }"
+assert 1 "int main() { int a; int b; int *p; a = 1; b = 2; p = &a; p = p - 8; *p = 42; return a; }"
+assert 42 "int main() { int a; int b; int *p; a = 1; b = 2; p = &a; p = p - 8; *p = 42; return b; }"
+
 # ptr to ptr to .... to int
 assert 42 "int main() { int a; int *ap; int **app; ap = &a; app = &ap; a = 1; *ap = 2; **app = 42; return a; }"
 assert 42 "int main() { int a; int *ap; int **app; ap = &a; app = &ap; a = 1; *ap = 42; return a; }"
