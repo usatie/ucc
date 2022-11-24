@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/23 21:44:33 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/24 11:21:35 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,10 +140,10 @@ EBNF syntax
 (Exetnded Backus-Naur form)
 
 program      = funcdecl*
-funcdecl     = "int" ident "(" ( "int" ident )* ")" block
+funcdecl     = "int" "*"* ident "(" ( "int" ident )* ")" block
 block        = "{" stmt* "}"
 stmt         = expr-stmt
-             | "int" ident ";"
+             | "int" "*"* ident ";"
              | "return" expr ";"
 			 | "if" "(" expr ")" stmt ("else" stmt)?
 			 | "while" "(" expr ")" stmt
@@ -156,7 +156,8 @@ equality     = relational ("==" relational | "!=" relational)*
 relational   = add ("<" add | "<=" add | ">" add | ">=" add)*
 add          = mul ("+" mul | "-" mul)*
 mul          = unary ("*" unary | "/" unary)*
-unary        = ("+" | "-")? primary
+unary        = ("+" | "-" | "&")? primary
+             | "*"* primary
 primary      = num 
              | funcall
              | ident
@@ -181,14 +182,25 @@ Function	*parse(Token *tok)
 	return (head);
 }
 
-// funcdecl = "int" ident "(" ( "int" ident )* ")" block
+// funcdecl = "int" "*"* ident "(" ( "int" ident )* ")" block
 Function	*funcdecl(Token **rest, Token *tok)
 {
 	Function	*func;
+	Type		*type;
 
 	func = calloc(sizeof(Function), 1);
 	ctx.lvars = NULL;
 	tok = expect_and_skip(tok, "int");
+	func->type = calloc(sizeof(Type), 1);
+	func->type->ty = INT;
+	while (isequal(tok, "*"))
+	{
+		tok = expect_and_skip(tok, "*");
+		type = calloc(sizeof(Type), 1);
+		type->ty = PTR;
+		type->ptr_to = func->type;
+		func->type = type;
+	}
 	expect_kind(tok, TK_IDENT);
 	func->name = strndup(tok->str, tok->len);
 	tok = expect_and_skip(tok->next, "(");
@@ -232,12 +244,22 @@ Node	*block(Token **rest, Token *tok)
 	return (node);
 }
 
+Type	*ptr_to(Type *type)
+{
+	Type	*new_type;
+
+	new_type = calloc(sizeof(Type), 1);
+	new_type->ty = PTR;
+	new_type->ptr_to = type;
+	return (new_type);
+}
+
 // stmt = "return" expr ";"
 //      | "if" "(" expr ")" stmt ("else" stmt)?
 //      | "while" "(" expr ")" stmt
 //      | "for" "(" expr? ";" expr? ";" expr? ")" stmt
 //      | block
-//      | "int" ident ";"
+//      | "int" "*"* ident ";"
 //      | expr-stmt
 Node	*stmt(Token **rest, Token *tok)
 {
@@ -295,9 +317,20 @@ Node	*stmt(Token **rest, Token *tok)
 		return (block(rest, tok));
 	else if (isequal(tok, "int"))
 	{
-		new_lvar(tok->next);
+		Type	*type;
+
+		type = calloc(sizeof(Type), 1);
+		type->ty = INT;
+		tok = tok->next;
+		while (isequal(tok, "*"))
+		{
+			tok = expect_and_skip(tok, "*");
+			type = ptr_to(type);
+		}
+		LVar	*lvar = new_lvar(tok);
+		lvar->type = type;
 		node = new_node(ND_BLOCK);
-		*rest = tok->next->next;
+		*rest = tok;
 		return (node);
 	}
 	else
@@ -421,7 +454,8 @@ Node	*mul(Token **rest, Token *tok)
 	}
 }
 
-// unary = ("+" | "-" | "*" | "&")? primary
+// unary = ("+" | "-" | "&")? primary
+//       | "*"* primary
 Node	*unary(Token **rest, Token *tok)
 {
 	if (isequal(tok, "+"))
@@ -432,7 +466,22 @@ Node	*unary(Token **rest, Token *tok)
 				new_node_num(0),
 				primary(rest, tok->next)));
 	if (isequal(tok, "*"))
-		return (new_node_unary(ND_DEREF, primary(rest, tok->next)));
+	{
+		int	num_deref = 0;
+		while (isequal(tok, "*"))
+		{
+			tok = tok->next;
+			num_deref++;
+		}
+		Node	*node;
+		node = primary(rest, tok);
+		while (num_deref > 0)
+		{
+			node = new_node_unary(ND_DEREF, node);
+			num_deref--;
+		}
+		return (node);
+	}
 	if (isequal(tok, "&"))
 		return (new_node_unary(ND_ADDR, primary(rest, tok->next)));
 	return (primary(rest, tok));

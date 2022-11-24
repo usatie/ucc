@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/23 21:49:19 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/24 00:58:37 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,17 @@ struct Token {
 	int			len;
 };
 
+typedef struct Type		Type;
+struct Type {
+	enum {INT, PTR} ty;
+	Type	*ptr_to;
+};
+
 typedef struct LVar		LVar;
 struct LVar {
 	LVar	*next;
 	char	*name;
+	Type	*type;
 	int		len; // length of the name
 	int		offset; // offset from rbp
 };
@@ -95,6 +102,7 @@ struct Function {
 	Function	*next;
 
 	char		*name;
+	Type		*type;
 	LVar		*args;
 
 	Node		*body;

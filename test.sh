@@ -23,6 +23,14 @@ assert() {
 	fi
 }
 
+# invalid type error
+# asserterror "int main() { int a; int b; b = a; }"
+
+# ptr to ptr to .... to int
+assert 42 "int main() { int a; int *ap; int **app; ap = &a; app = &ap; a = 1; *ap = 2; **app = 42; return a; }"
+assert 42 "int main() { int a; int *ap; int **app; ap = &a; app = &ap; a = 1; *ap = 42; return a; }"
+assert 42 "int main() { int a; int *ap; int **app; ap = &a; app = &ap; a = 42; return a; }"
+
 # same local var name
 assert 42 "int main() { int a; a = 42; foo(1); return a; } int foo(int a){ a = a + 1; return a; }"
 assert 42 "int main() { int a; a = 42; foo(); return a; } int foo(){ int a; a = 1; return a; }"
@@ -31,7 +39,7 @@ assert 1 "int main() { int a; int b; return foo(); } int foo(){ int b; int a; a 
 
 # unary * and &
 assert 42  "int main() { int a; a = 42; return *(&a); }"
-assert 42  "int main() { int a; int b; a = 42; b = &a; return *b; }"
+assert 42  "int main() { int a; int *b; a = 42; b = &a; return *b; }"
 assert 21  "int main() { int a; int b; a = 42; b = 21; return *(&b); }"
 assert 42  "int main() { int a; int b; a = 42; b = 21; return *(&b + 8); }"
 

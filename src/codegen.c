@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/23 21:54:48 by susami           ###   ########.fr       */
+/*   Updated: 2022/11/24 14:04:00 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -276,6 +276,7 @@ static void	gen_expr(Node *node)
 	}
 	else if (node->kind == ND_LVAR)
 	{
+		printf("# local variable\n");
 		gen_lval(node);
 		printf("  pop rax\n");
 		printf("  mov rax, [rax]\n");
@@ -284,7 +285,13 @@ static void	gen_expr(Node *node)
 	}
 	else if (node->kind == ND_ASSIGN)
 	{
-		gen_lval(node->lhs);
+		printf("# assign start\n");
+		printf("# assign lhs\n");
+		if (node->lhs->kind == ND_DEREF)
+			gen_expr(node->lhs->lhs);
+		else
+			gen_lval(node->lhs);
+		printf("# assign rhs\n");
 		gen_expr(node->rhs);
 		printf("  pop rdi # rvalue\n");
 		printf("  pop rax # lvalue\n");
