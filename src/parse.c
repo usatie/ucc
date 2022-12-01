@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/01 22:28:02 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/01 22:31:47 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ static bool	isequal(const Token *tok, const char *op)
 
 // Ensure that `token` matches `op`,
 // and returns the next token.
-static Token	*expect_and_skip(const Token *tok, const char *op)
+static Token	*skip_op(const Token *tok, const char *op)
 {
 	if (!isequal(tok, op))
 		error_tok(tok, "expected '%s', but not.", op);
@@ -35,7 +35,7 @@ static Token	*expect_and_skip(const Token *tok, const char *op)
 
 // Ensure that `token` matches `kind`.
 // and returns the next token.
-static Token	*expect_kind(const Token *tok, TokenKind kind)
+static Token	*skip_kind(const Token *tok, TokenKind kind)
 {
 	if (tok->kind != kind)
 		error_tok(tok, "expected '%d', but not.", kind);
@@ -190,36 +190,36 @@ Function	*funcdecl(Token **rest, Token *tok)
 
 	func = calloc(sizeof(Function), 1);
 	ctx.lvars = NULL;
-	tok = expect_and_skip(tok, "int");
+	tok = skip_op(tok, "int");
 	func->type = calloc(sizeof(Type), 1);
 	func->type->ty = INT;
 	while (isequal(tok, "*"))
 	{
-		tok = expect_and_skip(tok, "*");
+		tok = skip_op(tok, "*");
 		type = calloc(sizeof(Type), 1);
 		type->ty = PTR;
 		type->ptr_to = func->type;
 		func->type = type;
 	}
-	expect_kind(tok, TK_IDENT);
+	skip_kind(tok, TK_IDENT);
 	func->name = strndup(tok->str, tok->len);
-	tok = expect_and_skip(tok->next, "(");
+	tok = skip_op(tok->next, "(");
 	if (!isequal(tok, ")"))
 	{
-		tok = expect_and_skip(tok, "int");
-		expect_kind(tok, TK_IDENT);
+		tok = skip_op(tok, "int");
+		skip_kind(tok, TK_IDENT);
 		new_lvar(tok);
 		tok = tok->next;
 	}
 	while (!isequal(tok, ")"))
 	{
-		tok = expect_and_skip(tok, ",");
-		tok = expect_and_skip(tok, "int");
-		expect_kind(tok, TK_IDENT);
+		tok = skip_op(tok, ",");
+		tok = skip_op(tok, "int");
+		skip_kind(tok, TK_IDENT);
 		new_lvar(tok);
 		tok = tok->next;
 	}
-	tok = expect_and_skip(tok, ")");
+	tok = skip_op(tok, ")");
 	func->args = ctx.lvars;
 	func->body = block(rest, tok);
 	func->locals = ctx.lvars;
@@ -232,7 +232,7 @@ Node	*block(Token **rest, Token *tok)
 	Node	*node;
 	Node	*cur;
 
-	tok = expect_and_skip(tok, "{");
+	tok = skip_op(tok, "{");
 	node = new_node(ND_BLOCK);
 	if (!isequal(tok, "}"))
 	{
@@ -240,7 +240,7 @@ Node	*block(Token **rest, Token *tok)
 		while (!isequal(tok, "}"))
 			cur = cur->next = stmt(&tok, tok);
 	}
-	*rest = expect_and_skip(tok, "}");
+	*rest = skip_op(tok, "}");
 	return (node);
 }
 
@@ -268,25 +268,25 @@ Node	*stmt(Token **rest, Token *tok)
 	if (isequal(tok, "return"))
 	{
 		node = new_node_unary(ND_RETURN_STMT, expr(&tok, tok->next));
-		*rest = expect_and_skip(tok, ";");
+		*rest = skip_op(tok, ";");
 		return (node);
 	}
 	else if (isequal(tok, "for"))
 	{
 		node = new_node(ND_FOR_STMT);
-		tok = expect_and_skip(tok->next, "(");
+		tok = skip_op(tok->next, "(");
 		// init? ;
 		if (!isequal(tok, ";"))
 			node->init = expr(&tok, tok);
-		tok = expect_and_skip(tok, ";");
+		tok = skip_op(tok, ";");
 		// cond? ;
 		if (!isequal(tok, ";"))
 			node->cond = expr(&tok, tok);
-		tok = expect_and_skip(tok, ";");
+		tok = skip_op(tok, ";");
 		// inc?
 		if (!isequal(tok, ")"))
 			node->inc = expr(&tok, tok);
-		tok = expect_and_skip(tok, ")");
+		tok = skip_op(tok, ")");
 		// then
 		node->then = stmt(rest, tok);
 		return (node);
@@ -294,9 +294,9 @@ Node	*stmt(Token **rest, Token *tok)
 	else if (isequal(tok, "if"))
 	{
 		node = new_node(ND_IF_STMT);
-		tok = expect_and_skip(tok->next, "(");
+		tok = skip_op(tok->next, "(");
 		node->cond = expr(&tok, tok);
-		tok = expect_and_skip(tok, ")");
+		tok = skip_op(tok, ")");
 		node->then = stmt(&tok, tok);
 		if (isequal(tok, "else"))
 			node->els = stmt(&tok, tok->next);
@@ -306,9 +306,9 @@ Node	*stmt(Token **rest, Token *tok)
 	else if (isequal(tok, "while"))
 	{
 		node = new_node(ND_WHILE_STMT);
-		tok = expect_and_skip(tok->next, "(");
+		tok = skip_op(tok->next, "(");
 		node->cond = expr(&tok, tok);
-		tok = expect_and_skip(tok, ")");
+		tok = skip_op(tok, ")");
 		node->then = stmt(&tok, tok);
 		*rest = tok;
 		return (node);
@@ -324,7 +324,7 @@ Node	*stmt(Token **rest, Token *tok)
 		tok = tok->next;
 		while (isequal(tok, "*"))
 		{
-			tok = expect_and_skip(tok, "*");
+			tok = skip_op(tok, "*");
 			type = ptr_to(type);
 		}
 		LVar	*lvar = new_lvar(tok);
@@ -348,7 +348,7 @@ Node	*expr_stmt(Token **rest, Token *tok)
 		return (new_node(ND_BLOCK));
 	}
 	node = new_node_unary(ND_EXPR_STMT, expr(&tok, tok));
-	*rest = expect_and_skip(tok, ";");
+	*rest = skip_op(tok, ";");
 	return (node);
 }
 
@@ -498,7 +498,7 @@ Node	*parse_args(Token **rest, Token *tok)
 	cur = head;
 	while (!isequal(tok, ")"))
 	{
-		tok = expect_and_skip(tok, ",");
+		tok = skip_op(tok, ",");
 		cur->next = expr(&tok, tok);
 		cur = cur->next;
 	}
@@ -517,7 +517,7 @@ Node	*funcall(Token **rest, Token *tok)
 	tok = tok->next->next;
 	if (!isequal(tok, ")"))
 		node->args = parse_args(&tok, tok);
-	*rest = expect_and_skip(tok, ")");
+	*rest = skip_op(tok, ")");
 	return (node);
 }
 
@@ -532,7 +532,7 @@ Node	*primary(Token **rest, Token *tok)
 	if (isequal(tok, "("))
 	{
 		node = expr(&tok, tok->next);
-		*rest = expect_and_skip(tok, ")");
+		*rest = skip_op(tok, ")");
 		return (node);
 	}
 	if (tok->kind == TK_NUM)
