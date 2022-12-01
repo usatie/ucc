@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/01 22:31:47 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/01 22:39:00 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,19 @@ static Token	*skip_kind(const Token *tok, TokenKind kind)
 	if (tok->kind != kind)
 		error_tok(tok, "expected '%d', but not.", kind);
 	return (tok->next);
+}
+
+// Returns true if `tok` matches `op`
+// and update `rest`.
+static bool	consume_op(Token **rest, Token *tok, char *op)
+{
+	if (isequal(tok, op))
+	{
+		*rest = tok->next;
+		return true;
+	}
+	*rest = tok;
+	return false;
 }
 
 static bool	at_eof(Token *token)
@@ -193,9 +206,8 @@ Function	*funcdecl(Token **rest, Token *tok)
 	tok = skip_op(tok, "int");
 	func->type = calloc(sizeof(Type), 1);
 	func->type->ty = INT;
-	while (isequal(tok, "*"))
+	while (consume_op(&tok, tok, "*"))
 	{
-		tok = skip_op(tok, "*");
 		type = calloc(sizeof(Type), 1);
 		type->ty = PTR;
 		type->ptr_to = func->type;
@@ -322,9 +334,8 @@ Node	*stmt(Token **rest, Token *tok)
 		type = calloc(sizeof(Type), 1);
 		type->ty = INT;
 		tok = tok->next;
-		while (isequal(tok, "*"))
+		while (consume_op(&tok, tok, "*"))
 		{
-			tok = skip_op(tok, "*");
 			type = ptr_to(type);
 		}
 		LVar	*lvar = new_lvar(tok);
@@ -342,9 +353,8 @@ Node	*expr_stmt(Token **rest, Token *tok)
 {
 	Node	*node;
 
-	if (isequal(tok, ";"))
+	if (consume_op(rest, tok, ";"))
 	{
-		*rest = tok->next;
 		return (new_node(ND_BLOCK));
 	}
 	node = new_node_unary(ND_EXPR_STMT, expr(&tok, tok));
