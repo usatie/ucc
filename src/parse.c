@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/01 22:39:00 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/01 23:01:48 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,10 +49,10 @@ static bool	consume_op(Token **rest, Token *tok, char *op)
 	if (isequal(tok, op))
 	{
 		*rest = tok->next;
-		return true;
+		return (true);
 	}
 	*rest = tok;
-	return false;
+	return (false);
 }
 
 static bool	at_eof(Token *token)
@@ -266,6 +266,24 @@ Type	*ptr_to(Type *type)
 	return (new_type);
 }
 
+Node	*declaration(Token **rest, Token *tok)
+{
+	Node	*node;
+	Type	*type;
+	LVar	*lvar;
+
+	tok = skip_op(tok, "int");
+	type = calloc(sizeof(Type), 1);
+	type->ty = INT;
+	while (consume_op(&tok, tok, "*"))
+		type = ptr_to(type);
+	lvar = new_lvar(tok);
+	lvar->type = type;
+	node = new_node(ND_BLOCK);
+	*rest = tok;
+	return (node);
+}
+
 // stmt = "return" expr ";"
 //      | "if" "(" expr ")" stmt ("else" stmt)?
 //      | "while" "(" expr ")" stmt
@@ -328,22 +346,7 @@ Node	*stmt(Token **rest, Token *tok)
 	else if (isequal(tok, "{"))
 		return (block(rest, tok));
 	else if (isequal(tok, "int"))
-	{
-		Type	*type;
-
-		type = calloc(sizeof(Type), 1);
-		type->ty = INT;
-		tok = tok->next;
-		while (consume_op(&tok, tok, "*"))
-		{
-			type = ptr_to(type);
-		}
-		LVar	*lvar = new_lvar(tok);
-		lvar->type = type;
-		node = new_node(ND_BLOCK);
-		*rest = tok;
-		return (node);
-	}
+		return (declaration(rest, tok));
 	else
 		return (expr_stmt(rest, tok));
 }
