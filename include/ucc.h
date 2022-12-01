@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/11/24 00:58:37 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/01 22:27:09 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,6 +121,8 @@ extern context			ctx;
 // error.c
 void		error(const char *fmt, ...) __attribute__((noreturn));
 void		error_at(const char *loc, const char *fmt, ...)\
+				__attribute__((noreturn));
+void		error_tok(const Token *tok, const char *fmt, ...)\
 				__attribute__((noreturn));
 
 // tokenize.c

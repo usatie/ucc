@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 16:52:42 by susami            #+#    #+#             */
-/*   Updated: 2022/11/23 21:10:39 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/01 22:26:27 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,18 +28,35 @@ void	error(const char *fmt, ...)
 	exit(1);
 }
 
-void	error_at(const char *loc, const char *fmt, ...)
+static void	verror_at(const char *loc, const char *fmt, va_list ap) \
+	__attribute__((noreturn));
+
+static void	verror_at(const char *loc, const char *fmt, va_list ap)
 {
-	va_list		ap;
 	const int	pos = loc - ctx.user_input;
 
-	va_start(ap, fmt);
 	fprintf(stderr, "%s\n", ctx.user_input);
-	fprintf(stderr, "%*s", pos, " "); // print spaces for pos
+	fprintf(stderr, "%*s", pos, ""); // print pos spaces.
 	fprintf(stderr, "^ ");
 	vfprintf(stderr, fmt, ap);
 	fprintf(stderr, "\n");
 	exit(1);
+}
+
+void	error_at(const char *loc, const char *fmt, ...)
+{
+	va_list	ap;
+
+	va_start(ap, fmt);
+	verror_at(loc, fmt, ap);
+}
+
+void	error_tok(const Token *tok, const char *fmt, ...)
+{
+	va_list	ap;
+
+	va_start(ap, fmt);
+	verror_at(tok->str, fmt, ap);
 }
 
 // main

@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/11/24 11:21:35 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/01 22:28:02 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ static bool	isequal(const Token *tok, const char *op)
 static Token	*expect_and_skip(const Token *tok, const char *op)
 {
 	if (!isequal(tok, op))
-		error_at(tok->str, "expected '%s', but not.", op);
+		error_tok(tok, "expected '%s', but not.", op);
 	return (tok->next);
 }
 
@@ -38,7 +38,7 @@ static Token	*expect_and_skip(const Token *tok, const char *op)
 static Token	*expect_kind(const Token *tok, TokenKind kind)
 {
 	if (tok->kind != kind)
-		error_at(tok->str, "expected '%d', but not.", kind);
+		error_tok(tok, "expected '%d', but not.", kind);
 	return (tok->next);
 }
 
@@ -104,7 +104,7 @@ static LVar	*new_lvar(const Token *tok)
 
 	lvar = find_lvar(tok);
 	if (lvar)
-		error_at(tok->str, "Already declared identifier");
+		error_tok(tok, "Already declared identifier");
 	else
 	{
 		lvar = calloc(1, sizeof(LVar));
@@ -128,7 +128,7 @@ static Node	*new_node_lvar(Token *tok)
 	node = new_node(ND_LVAR);
 	lvar = find_lvar(tok);
 	if (lvar == NULL)
-		error_at(tok->str, "Undeclared identifier");
+		error_tok(tok, "Undeclared identifier");
 	node->lvar = lvar;
 	return (node);
 }
@@ -550,5 +550,5 @@ Node	*primary(Token **rest, Token *tok)
 		*rest = tok->next;
 		return (new_node_lvar(tok));
 	}
-	error_at(tok->str, "Invalid token.");
+	error_tok(tok, "Invalid token.");
 }
