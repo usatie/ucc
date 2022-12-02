@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/12/01 22:27:09 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/02 21:22:11 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,9 @@ struct Token {
 
 typedef struct Type		Type;
 struct Type {
-	enum {INT, PTR} ty;
-	Type	*ptr_to;
+	typedef enum {INT, PTR} type_kind;
+	type_kind	ty;
+	Type		*ptr_to;
 };
 
 typedef struct LVar		LVar;
@@ -117,6 +118,7 @@ struct context {
 };
 
 extern context			ctx;
+extern Type				*ty_int;
 
 // error.c
 void		error(const char *fmt, ...) __attribute__((noreturn));
@@ -127,6 +129,10 @@ void		error_tok(const Token *tok, const char *fmt, ...)\
 
 // tokenize.c
 Token		*tokenize(char *p);
+
+// type.c
+Type		*ptr_to(Type *type);
+
 // parser.c
 // syntax parser
 Function	*parse(Token *tok);

@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/01 23:01:48 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/02 21:18:59 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,7 +111,7 @@ static LVar	*find_lvar(const Token *tok)
 	return (NULL);
 }
 
-static LVar	*new_lvar(const Token *tok)
+static LVar	*new_lvar(const Token *tok, Type *ty)
 {
 	LVar	*lvar;
 
@@ -124,6 +124,7 @@ static LVar	*new_lvar(const Token *tok)
 		lvar->next = ctx.lvars;
 		lvar->name = tok->str;
 		lvar->len = tok->len;
+		lvar->type = ty;
 		if (ctx.lvars == NULL)
 			lvar->offset = 8;
 		else
@@ -199,20 +200,13 @@ Function	*parse(Token *tok)
 Function	*funcdecl(Token **rest, Token *tok)
 {
 	Function	*func;
-	Type		*type;
 
-	func = calloc(sizeof(Function), 1);
 	ctx.lvars = NULL;
 	tok = skip_op(tok, "int");
-	func->type = calloc(sizeof(Type), 1);
-	func->type->ty = INT;
+	func = calloc(sizeof(Function), 1);
+	func->type = ty_int;
 	while (consume_op(&tok, tok, "*"))
-	{
-		type = calloc(sizeof(Type), 1);
-		type->ty = PTR;
-		type->ptr_to = func->type;
-		func->type = type;
-	}
+		func->type = ptr_to(func->type);
 	skip_kind(tok, TK_IDENT);
 	func->name = strndup(tok->str, tok->len);
 	tok = skip_op(tok->next, "(");
@@ -220,7 +214,7 @@ Function	*funcdecl(Token **rest, Token *tok)
 	{
 		tok = skip_op(tok, "int");
 		skip_kind(tok, TK_IDENT);
-		new_lvar(tok);
+		new_lvar(tok, ty_int);
 		tok = tok->next;
 	}
 	while (!isequal(tok, ")"))
@@ -228,7 +222,7 @@ Function	*funcdecl(Token **rest, Token *tok)
 		tok = skip_op(tok, ",");
 		tok = skip_op(tok, "int");
 		skip_kind(tok, TK_IDENT);
-		new_lvar(tok);
+		new_lvar(tok, ty_int);
 		tok = tok->next;
 	}
 	tok = skip_op(tok, ")");
@@ -256,30 +250,17 @@ Node	*block(Token **rest, Token *tok)
 	return (node);
 }
 
-Type	*ptr_to(Type *type)
-{
-	Type	*new_type;
-
-	new_type = calloc(sizeof(Type), 1);
-	new_type->ty = PTR;
-	new_type->ptr_to = type;
-	return (new_type);
-}
-
 Node	*declaration(Token **rest, Token *tok)
 {
 	Node	*node;
 	Type	*type;
-	LVar	*lvar;
 
 	tok = skip_op(tok, "int");
-	type = calloc(sizeof(Type), 1);
-	type->ty = INT;
+	type = ty_int;
 	while (consume_op(&tok, tok, "*"))
 		type = ptr_to(type);
-	lvar = new_lvar(tok);
-	lvar->type = type;
-	node = new_node(ND_BLOCK);
+	new_lvar(tok, type); // this is only for allocate local variable
+	node = new_node(ND_BLOCK); // this is empty block
 	*rest = tok;
 	return (node);
 }
@@ -471,6 +452,9 @@ Node	*mul(Token **rest, Token *tok)
 //       | "*"* primary
 Node	*unary(Token **rest, Token *tok)
 {
+	Node	*node;
+	int		num_deref;
+
 	if (isequal(tok, "+"))
 		return (primary(rest, tok->next));
 	if (isequal(tok, "-"))
@@ -480,13 +464,9 @@ Node	*unary(Token **rest, Token *tok)
 				primary(rest, tok->next)));
 	if (isequal(tok, "*"))
 	{
-		int	num_deref = 0;
-		while (isequal(tok, "*"))
-		{
-			tok = tok->next;
+		num_deref = 0;
+		while (consume_op(&tok, tok, "*"))
 			num_deref++;
-		}
-		Node	*node;
 		node = primary(rest, tok);
 		while (num_deref > 0)
 		{
