@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/12/02 21:22:11 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/03 16:30:50 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,8 +32,7 @@ struct Token {
 
 typedef struct Type		Type;
 struct Type {
-	typedef enum {INT, PTR} type_kind;
-	type_kind	ty;
+	enum {INT, PTR} ty;
 	Type		*ptr_to;
 };
 

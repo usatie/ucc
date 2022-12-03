@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/11/24 14:04:00 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/03 16:30:15 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,21 +32,11 @@ void	codegen(Function *func)
 	}
 }
 
-static void	gen_func(Function *func)
+static void	setup_args(Function *func)
 {
-	printf(".globl %s\n", func->name);
-	printf("%s:\n", func->name);
+	LVar	*arg;
 
-	// prologue
-	printf("# Prologue\n");
-	printf("  push rbp\n");
-	printf("  mov rbp, rsp\n");
-	// Allocate local variables
-	printf("# Allocate local variables\n");
-	printf("  push rbp\n");
-	printf("  sub rsp, %d\n", stack_size());
-	// Setup args
-	LVar	*arg = func->args;
+	arg = func->args;
 	while (arg)
 	{
 		printf("  mov rax, rbp\n");
@@ -62,6 +52,23 @@ static void	gen_func(Function *func)
 		printf("  push 0\n");
 	}
 	*/
+}
+
+static void	gen_func(Function *func)
+{
+	printf(".globl %s\n", func->name);
+	printf("%s:\n", func->name);
+
+	// prologue
+	printf("# Prologue\n");
+	printf("  push rbp\n");
+	printf("  mov rbp, rsp\n");
+	// Allocate local variables
+	printf("# Allocate local variables\n");
+	printf("  push rbp\n");
+	printf("  sub rsp, %d\n", stack_size());
+	// Setup args
+	setup_args(func);
 
 	printf("# Program\n");
 	gen_block(func->body);
@@ -86,6 +93,7 @@ static void	gen_block(Node *node)
 static void	gen_stmt(Node *node)
 {
 	static int	label;
+	const int	label_at_gen = label;
 
 	if (node->kind == ND_RETURN_STMT)
 	{
@@ -107,37 +115,34 @@ static void	gen_stmt(Node *node)
 	}
 	if (node->kind == ND_IF_STMT)
 	{
-		int l = label;
 		label++;
 		gen_expr(node->cond);
 		printf("  pop rax\n");
 		printf("  cmp rax, 0\n");
-		printf("  je .Lelse%d\n", l);
+		printf("  je .Lelse%d\n", label_at_gen);
 		gen_stmt(node->then);
-		printf("  jmp .Lend%d\n", l);
-		printf(".Lelse%d:\n", l);
+		printf("  jmp .Lend%d\n", label_at_gen);
+		printf(".Lelse%d:\n", label_at_gen);
 		if (node->els)
 			gen_stmt(node->els);
-		printf(".Lend%d:\n", l);
+		printf(".Lend%d:\n", label_at_gen);
 		return ;
 	}
 	if (node->kind == ND_WHILE_STMT)
 	{
-		int l = label;
 		label++;
-		printf(".Lstart%d:\n", l);
+		printf(".Lstart%d:\n", label_at_gen);
 		gen_expr(node->cond);
 		printf("  pop rax\n");
 		printf("  cmp rax, 0\n");
-		printf("  je .Lend%d\n", l);
+		printf("  je .Lend%d\n", label_at_gen);
 		gen_stmt(node->then);
-		printf("  jmp .Lstart%d\n", l);
-		printf(".Lend%d:\n", l);
+		printf("  jmp .Lstart%d\n", label_at_gen);
+		printf(".Lend%d:\n", label_at_gen);
 		return ;
 	}
 	if (node->kind == ND_FOR_STMT)
 	{
-		int l = label;
 		label++;
 		printf("# for.init\n");
 		if (node->init)
@@ -145,14 +150,14 @@ static void	gen_stmt(Node *node)
 			gen_expr(node->init);
 			printf("  pop rax\n");
 		}
-		printf(".Lstart%d:\n", l);
+		printf(".Lstart%d:\n", label_at_gen);
 		printf("# for.cond\n");
 		if (node->cond)
 		{
 			gen_expr(node->cond);
 			printf("  pop rax\n");
 			printf("  cmp rax, 0\n");
-			printf("  je .Lend%d\n", l);
+			printf("  je .Lend%d\n", label_at_gen);
 		}
 		printf("# for.then\n");
 		gen_stmt(node->then);
@@ -162,8 +167,8 @@ static void	gen_stmt(Node *node)
 			gen_expr(node->inc);
 			printf("  pop rax\n");
 		}
-		printf("  jmp .Lstart%d\n", l);
-		printf(".Lend%d:\n", l);
+		printf("  jmp .Lstart%d\n", label_at_gen);
+		printf(".Lend%d:\n", label_at_gen);
 		return ;
 	}
 	if (node->kind == ND_BLOCK)
@@ -267,6 +272,33 @@ static void	gen_binary_expr(Node *node)
 	printf("  push rax\n");
 }
 
+static void	gen_funcall(Node *node)
+{
+	int		i;
+	int		nargs;
+	Node	*arg;
+
+	nargs = 0;
+	printf("# TODO: allign sp to 16\n");
+	printf("# func call\n");
+	arg = node->args;
+	while (arg)
+	{
+		gen_expr(arg);
+		nargs++;
+		arg = arg->next;
+	}
+	i = nargs - 1;
+	while (i >= 0)
+	{
+		printf("  pop %s\n", argreg[i]);
+		i--;
+	}
+	printf("  call %s\n", node->funcname);
+	printf("  push rax\n");
+
+}
+
 static void	gen_expr(Node *node)
 {
 	if (node->kind == ND_NUM)
@@ -301,18 +333,7 @@ static void	gen_expr(Node *node)
 	}
 	else if (node->kind == ND_FUNC_CALL)
 	{
-		printf("# TODO: allign sp to 16\n");
-		printf("# func call\n");
-		int	nargs = 0;
-		for (Node *arg = node->args; arg; arg = arg->next)
-		{
-			gen_expr(arg);
-			nargs++;
-		}
-		for (int i = nargs - 1; i >= 0; i--)
-			printf("  pop %s\n", argreg[i]);
-		printf("  call %s\n", node->funcname);
-		printf("  push rax\n");
+		gen_funcall(node);
 	}
 	else if (node->kind == ND_ADDR)
 		gen_lval(node->lhs);
