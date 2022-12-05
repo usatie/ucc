@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/12/05 22:45:10 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/05 23:41:06 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ typedef enum {
 	ND_MUL, // *
 	ND_DIV, // /
 	ND_NUM, // integer
+	ND_NEG, // unary -
 	ND_EQ, // ==
 	ND_NEQ, // !=
 	ND_LT, // <

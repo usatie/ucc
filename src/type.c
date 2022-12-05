@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 06:52:32 by susami            #+#    #+#             */
-/*   Updated: 2022/12/05 23:16:01 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/05 23:56:24 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ void	add_type(Node *node)
 	case ND_MUL:
 	case ND_DIV:
 	case ND_ASSIGN:
+	case ND_NEG:
 		node->ty = node->lhs->ty;
 		return ;
 	case ND_EQ:

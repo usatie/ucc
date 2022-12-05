@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/12/05 23:18:12 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/05 23:45:10 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -304,6 +304,14 @@ static void	gen_expr(Node *node)
 	if (node->kind == ND_NUM)
 	{
 		printf("  push %d\n", node->val);
+		return ;
+	}
+	if (node->kind == ND_NEG)
+	{
+		gen_expr(node->lhs);
+		printf("  pop rax\n");
+		printf("  neg rax\n");
+		printf("  push rax\n");
 		return ;
 	}
 	else if (node->kind == ND_LVAR)

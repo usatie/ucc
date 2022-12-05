@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/05 23:06:50 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/05 23:57:23 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -432,7 +432,7 @@ static Node	*new_sub(Node *lhs, Node *rhs, Token *tok)
 {
 	add_type(lhs);
 	add_type(rhs);
-	// num + num
+	// num - num
 	if (is_integer(lhs->ty) && is_integer(rhs->ty))
 		return new_node_binary(ND_SUB, lhs, rhs, tok);
 	return new_node_binary(ND_SUB, lhs, rhs, tok);
@@ -491,9 +491,8 @@ Node	*unary(Token **rest, Token *tok)
 	if (isequal(tok, "+"))
 		return (primary(rest, tok->next));
 	if (isequal(tok, "-"))
-		return (new_node_binary(
-				ND_SUB,
-				new_node_num(0, NULL),
+		return (new_node_unary(
+				ND_NEG,
 				primary(rest, tok->next),
 				tok));
 	if (isequal(tok, "*"))
