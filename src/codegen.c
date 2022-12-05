@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/12/03 16:30:15 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/05 23:18:12 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,7 +179,7 @@ static void	gen_stmt(Node *node)
 		printf("# code block end\n");
 		return ;
 	}
-	error("Invalid kind");
+	error_tok(node->tok, "Invalid kind");
 }
 
 static void	gen_lval(Node *node)
@@ -194,7 +194,7 @@ static void	gen_lval(Node *node)
 		printf("  push rax\n");
 		return ;
 	}
-	error("Expected local variable.");
+	error_tok(node->tok, "Expected local variable.");
 }
 
 static void	gen_binary_expr(Node *node)
@@ -268,7 +268,7 @@ static void	gen_binary_expr(Node *node)
 		printf("  movzb rax, al\n");
 	}
 	else
-		error("Invalid binary expression node\n");
+		error_tok(node->tok, "Invalid binary expression node\n");
 	printf("  push rax\n");
 }
 
@@ -347,7 +347,7 @@ static void	gen_expr(Node *node)
 	else if (node->lhs && node->rhs)
 		gen_binary_expr(node);
 	else
-		error("Invalid expression node\n");
+		error_tok(node->tok, "Invalid expression node\n");
 }
 
 static int	stack_size(void)

@@ -6,12 +6,14 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/12/03 16:30:50 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/05 22:45:10 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef UCC_H
 # define UCC_H
+
+#include <stdbool.h>
 
 typedef enum {
 	TK_PUNCT, // Punctuators
@@ -31,8 +33,13 @@ struct Token {
 };
 
 typedef struct Type		Type;
+typedef enum {
+	TY_INT,
+	TY_PTR,
+}	TypeKind;
+
 struct Type {
-	enum {INT, PTR} ty;
+	TypeKind	kind;
 	Type		*ptr_to;
 };
 
@@ -75,6 +82,8 @@ typedef struct Node		Node;
 struct Node {
 	NodeKind	kind;
 	Node		*next; // Next node (for ND_*_STMT)
+	Token		*tok;
+	Type		*ty;
 
 	Node		*lhs;
 	Node		*rhs;
@@ -130,6 +139,8 @@ void		error_tok(const Token *tok, const char *fmt, ...)\
 Token		*tokenize(char *p);
 
 // type.c
+bool		is_integer(Type *ty);
+void		add_type(Node *node);
 Type		*ptr_to(Type *type);
 
 // parser.c

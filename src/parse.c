@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/02 21:18:59 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/05 23:06:50 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,39 +60,40 @@ static bool	at_eof(Token *token)
 	return (token->kind == TK_EOF);
 }
 
-static Node	*new_node(NodeKind kind)
+static Node	*new_node(NodeKind kind, Token *tok)
 {
 	Node	*node;
 
 	node = calloc(1, sizeof(Node));
 	node->kind = kind;
+	node->tok = tok;
 	return (node);
 }
 
-static Node	*new_node_binary(NodeKind kind, Node *lhs, Node *rhs)
+static Node	*new_node_binary(NodeKind kind, Node *lhs, Node *rhs, Token *tok)
 {
 	Node	*node;
 
-	node = new_node(kind);
+	node = new_node(kind, tok);
 	node->lhs = lhs;
 	node->rhs = rhs;
 	return (node);
 }
 
-static Node	*new_node_unary(NodeKind kind, Node *expr)
+static Node	*new_node_unary(NodeKind kind, Node *expr, Token *tok)
 {
 	Node	*node;
 
-	node = new_node(kind);
+	node = new_node(kind, tok);
 	node->lhs = expr;
 	return (node);
 }
 
-static Node	*new_node_num(int val)
+static Node	*new_node_num(int val, Token *tok)
 {
 	Node	*node;
 
-	node = new_node(ND_NUM);
+	node = new_node(ND_NUM, tok);
 	node->val = val;
 	return (node);
 }
@@ -139,7 +140,7 @@ static Node	*new_node_lvar(Token *tok)
 	LVar	*lvar;
 	Node	*node;
 
-	node = new_node(ND_LVAR);
+	node = new_node(ND_LVAR, tok);
 	lvar = find_lvar(tok);
 	if (lvar == NULL)
 		error_tok(tok, "Undeclared identifier");
@@ -236,16 +237,17 @@ Function	*funcdecl(Token **rest, Token *tok)
 Node	*block(Token **rest, Token *tok)
 {
 	Node	*node;
-	Node	*cur;
+	Node	head = {};
+	Node	*cur = &head;
 
+	node = new_node(ND_BLOCK, tok);
 	tok = skip_op(tok, "{");
-	node = new_node(ND_BLOCK);
-	if (!isequal(tok, "}"))
+	while (!isequal(tok, "}"))
 	{
-		cur = node->body = stmt(&tok, tok);
-		while (!isequal(tok, "}"))
-			cur = cur->next = stmt(&tok, tok);
+		cur = cur->next = stmt(&tok, tok);
+		add_type(cur);
 	}
+	node->body = head.next;
 	*rest = skip_op(tok, "}");
 	return (node);
 }
@@ -255,12 +257,12 @@ Node	*declaration(Token **rest, Token *tok)
 	Node	*node;
 	Type	*type;
 
+	node = new_node(ND_BLOCK, tok); // this is empty block
 	tok = skip_op(tok, "int");
 	type = ty_int;
 	while (consume_op(&tok, tok, "*"))
 		type = ptr_to(type);
 	new_lvar(tok, type); // this is only for allocate local variable
-	node = new_node(ND_BLOCK); // this is empty block
 	*rest = tok;
 	return (node);
 }
@@ -278,13 +280,13 @@ Node	*stmt(Token **rest, Token *tok)
 
 	if (isequal(tok, "return"))
 	{
-		node = new_node_unary(ND_RETURN_STMT, expr(&tok, tok->next));
+		node = new_node_unary(ND_RETURN_STMT, expr(&tok, tok->next), tok);
 		*rest = skip_op(tok, ";");
 		return (node);
 	}
 	else if (isequal(tok, "for"))
 	{
-		node = new_node(ND_FOR_STMT);
+		node = new_node(ND_FOR_STMT, tok);
 		tok = skip_op(tok->next, "(");
 		// init? ;
 		if (!isequal(tok, ";"))
@@ -304,7 +306,7 @@ Node	*stmt(Token **rest, Token *tok)
 	}
 	else if (isequal(tok, "if"))
 	{
-		node = new_node(ND_IF_STMT);
+		node = new_node(ND_IF_STMT, tok);
 		tok = skip_op(tok->next, "(");
 		node->cond = expr(&tok, tok);
 		tok = skip_op(tok, ")");
@@ -316,7 +318,7 @@ Node	*stmt(Token **rest, Token *tok)
 	}
 	else if (isequal(tok, "while"))
 	{
-		node = new_node(ND_WHILE_STMT);
+		node = new_node(ND_WHILE_STMT, tok);
 		tok = skip_op(tok->next, "(");
 		node->cond = expr(&tok, tok);
 		tok = skip_op(tok, ")");
@@ -339,9 +341,9 @@ Node	*expr_stmt(Token **rest, Token *tok)
 
 	if (consume_op(rest, tok, ";"))
 	{
-		return (new_node(ND_BLOCK));
+		return (new_node(ND_BLOCK, tok));
 	}
-	node = new_node_unary(ND_EXPR_STMT, expr(&tok, tok));
+	node = new_node_unary(ND_EXPR_STMT, expr(&tok, tok), tok);
 	*rest = skip_op(tok, ";");
 	return (node);
 }
@@ -359,7 +361,7 @@ Node	*assign(Token **rest, Token *tok)
 
 	node = equality(&tok, tok);
 	if (isequal(tok, "="))
-		node = new_node_binary(ND_ASSIGN, node, assign(&tok, tok->next));
+		node = new_node_binary(ND_ASSIGN, node, assign(&tok, tok->next), tok);
 	*rest = tok;
 	return (node);
 }
@@ -372,10 +374,11 @@ Node	*equality(Token **rest, Token *tok)
 	node = relational(&tok, tok);
 	while (1)
 	{
+		Token	*start = tok;
 		if (isequal(tok, "=="))
-			node = new_node_binary(ND_EQ, node, relational(&tok, tok->next));
+			node = new_node_binary(ND_EQ, node, relational(&tok, tok->next), start);
 		else if (isequal(tok, "!="))
-			node = new_node_binary(ND_NEQ, node, relational(&tok, tok->next));
+			node = new_node_binary(ND_NEQ, node, relational(&tok, tok->next), start);
 		else
 		{
 			*rest = tok;
@@ -392,20 +395,48 @@ Node	*relational(Token **rest, Token *tok)
 	node = add(&tok, tok);
 	while (1)
 	{
+		Token	*start = tok;
 		if (isequal(tok, "<"))
-			node = new_node_binary(ND_LT, node, add(&tok, tok->next));
+			node = new_node_binary(ND_LT, node, add(&tok, tok->next), start);
 		else if (isequal(tok, "<="))
-			node = new_node_binary(ND_LTE, node, add(&tok, tok->next));
+			node = new_node_binary(ND_LTE, node, add(&tok, tok->next), start);
 		else if (isequal(tok, ">"))
-			node = new_node_binary(ND_GT, node, add(&tok, tok->next));
+			node = new_node_binary(ND_GT, node, add(&tok, tok->next), start);
 		else if (isequal(tok, ">="))
-			node = new_node_binary(ND_GTE, node, add(&tok, tok->next));
+			node = new_node_binary(ND_GTE, node, add(&tok, tok->next), start);
 		else
 		{
 			*rest = tok;
 			return (node);
 		}
 	}
+}
+
+// In C, `+` operator is overloaded to perform the pointer arithmetic.
+// If p is a pointer, p+n adds not n but sizeof(*p)*n to the value of p,
+// so that p+n points to the location of n elements (not bytes) ahead of p.
+// In other words, we need to scale an integer value before adding to a
+// pointer value. This function take care of the scaling.
+static Node	*new_add(Node *lhs, Node *rhs, Token *tok)
+{
+	add_type(lhs);
+	add_type(rhs);
+	// num + num
+	if (is_integer(lhs->ty) && is_integer(rhs->ty))
+		return new_node_binary(ND_ADD, lhs, rhs, tok);
+	return new_node_binary(ND_ADD, lhs, rhs, tok);
+	error_tok(tok, "Invalid operands");
+}
+
+static Node	*new_sub(Node *lhs, Node *rhs, Token *tok)
+{
+	add_type(lhs);
+	add_type(rhs);
+	// num + num
+	if (is_integer(lhs->ty) && is_integer(rhs->ty))
+		return new_node_binary(ND_SUB, lhs, rhs, tok);
+	return new_node_binary(ND_SUB, lhs, rhs, tok);
+	error_tok(tok, "Invalid operands");
 }
 
 // add = mul ("+" mul | "-" mul)*
@@ -416,10 +447,11 @@ Node	*add(Token **rest, Token *tok)
 	node = mul(&tok, tok);
 	while (1)
 	{
+		Token	*start = tok;
 		if (isequal(tok, "+"))
-			node = new_node_binary(ND_ADD, node, mul(&tok, tok->next));
+			node = new_add(node, mul(&tok, tok->next), start);
 		else if (isequal(tok, "-"))
-			node = new_node_binary(ND_SUB, node, mul(&tok, tok->next));
+			node = new_sub(node, mul(&tok, tok->next), start);
 		else
 		{
 			*rest = tok;
@@ -436,10 +468,11 @@ Node	*mul(Token **rest, Token *tok)
 	node = unary(&tok, tok);
 	while (1)
 	{
+		Token	*start = tok;
 		if (isequal(tok, "*"))
-			node = new_node_binary(ND_MUL, node, unary(&tok, tok->next));
+			node = new_node_binary(ND_MUL, node, unary(&tok, tok->next), start);
 		else if (isequal(tok, "/"))
-			node = new_node_binary(ND_DIV, node, unary(&tok, tok->next));
+			node = new_node_binary(ND_DIV, node, unary(&tok, tok->next), start);
 		else
 		{
 			*rest = tok;
@@ -460,23 +493,25 @@ Node	*unary(Token **rest, Token *tok)
 	if (isequal(tok, "-"))
 		return (new_node_binary(
 				ND_SUB,
-				new_node_num(0),
-				primary(rest, tok->next)));
+				new_node_num(0, NULL),
+				primary(rest, tok->next),
+				tok));
 	if (isequal(tok, "*"))
 	{
+		Token	*start = tok;
 		num_deref = 0;
 		while (consume_op(&tok, tok, "*"))
 			num_deref++;
 		node = primary(rest, tok);
 		while (num_deref > 0)
 		{
-			node = new_node_unary(ND_DEREF, node);
+			node = new_node_unary(ND_DEREF, node, start);
 			num_deref--;
 		}
 		return (node);
 	}
 	if (isequal(tok, "&"))
-		return (new_node_unary(ND_ADDR, primary(rest, tok->next)));
+		return (new_node_unary(ND_ADDR, primary(rest, tok->next), tok));
 	return (primary(rest, tok));
 }
 
@@ -505,7 +540,7 @@ Node	*funcall(Token **rest, Token *tok)
 {
 	Node	*node;
 
-	node = new_node(ND_FUNC_CALL);
+	node = new_node(ND_FUNC_CALL, tok);
 	node->funcname = strndup(tok->str, tok->len);
 	tok = tok->next->next;
 	if (!isequal(tok, ")"))
@@ -530,7 +565,7 @@ Node	*primary(Token **rest, Token *tok)
 	}
 	if (tok->kind == TK_NUM)
 	{
-		node = new_node_num(tok->val);
+		node = new_node_num(tok->val, tok);
 		*rest = tok->next;
 		return (node);
 	}
