@@ -6,12 +6,14 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/12/05 23:45:10 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/06 02:15:25 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdio.h>
 #include "ucc.h"
+
+int			depth = 0;
 
 static void	gen_func(Function *func);
 static void	gen_block(Node *node);
@@ -30,6 +32,18 @@ void	codegen(Function *func)
 		gen_func(func);
 		func = func->next;
 	}
+}
+
+static void	push(void)
+{
+	printf("  push rax\n");
+	depth++;
+}
+
+static void	pop(char *arg)
+{
+	printf("  pop %s\n", arg);
+	depth--;
 }
 
 static void	setup_args(Function *func)
@@ -98,7 +112,6 @@ static void	gen_stmt(Node *node)
 	if (node->kind == ND_RETURN_STMT)
 	{
 		gen_expr(node->lhs);
-		printf("  pop rax\n");
 		printf("  mov rsp, rbp\n");
 		printf("  pop rbp\n");
 		printf("  ret\n");
@@ -107,17 +120,12 @@ static void	gen_stmt(Node *node)
 	if (node->kind == ND_EXPR_STMT)
 	{
 		gen_expr(node->lhs);
-		// Evaluated result of the code is on the top of the stack.
-		// Pop to RAX to make it return value,
-		// and clean up the top of the stack.
-		printf("  pop rax\n");
 		return ;
 	}
 	if (node->kind == ND_IF_STMT)
 	{
 		label++;
 		gen_expr(node->cond);
-		printf("  pop rax\n");
 		printf("  cmp rax, 0\n");
 		printf("  je .Lelse%d\n", label_at_gen);
 		gen_stmt(node->then);
@@ -133,7 +141,6 @@ static void	gen_stmt(Node *node)
 		label++;
 		printf(".Lstart%d:\n", label_at_gen);
 		gen_expr(node->cond);
-		printf("  pop rax\n");
 		printf("  cmp rax, 0\n");
 		printf("  je .Lend%d\n", label_at_gen);
 		gen_stmt(node->then);
@@ -146,16 +153,12 @@ static void	gen_stmt(Node *node)
 		label++;
 		printf("# for.init\n");
 		if (node->init)
-		{
 			gen_expr(node->init);
-			printf("  pop rax\n");
-		}
 		printf(".Lstart%d:\n", label_at_gen);
 		printf("# for.cond\n");
 		if (node->cond)
 		{
 			gen_expr(node->cond);
-			printf("  pop rax\n");
 			printf("  cmp rax, 0\n");
 			printf("  je .Lend%d\n", label_at_gen);
 		}
@@ -163,10 +166,7 @@ static void	gen_stmt(Node *node)
 		gen_stmt(node->then);
 		printf("# for.inc\n");
 		if (node->inc)
-		{
 			gen_expr(node->inc);
-			printf("  pop rax\n");
-		}
 		printf("  jmp .Lstart%d\n", label_at_gen);
 		printf(".Lend%d:\n", label_at_gen);
 		return ;
@@ -191,7 +191,6 @@ static void	gen_lval(Node *node)
 		offset = node->lvar->offset;
 		printf("  mov rax, rbp\n");
 		printf("  sub rax, %d\n", offset);
-		printf("  push rax\n");
 		return ;
 	}
 	error_tok(node->tok, "Expected local variable.");
@@ -201,9 +200,10 @@ static void	gen_binary_expr(Node *node)
 {
 	//printf("# gen(%s)\n", stringize(node));
 	gen_expr(node->lhs);
+	push();
 	gen_expr(node->rhs);
-	printf("  pop rdi\n");
-	printf("  pop rax\n");
+	printf("  mov rdi, rax\n");
+	pop("rax");
 	if (node->kind == ND_ADD)
 	{
 		printf("# ADD\n");
@@ -269,12 +269,10 @@ static void	gen_binary_expr(Node *node)
 	}
 	else
 		error_tok(node->tok, "Invalid binary expression node\n");
-	printf("  push rax\n");
 }
 
 static void	gen_funcall(Node *node)
 {
-	int		i;
 	int		nargs;
 	Node	*arg;
 
@@ -285,17 +283,11 @@ static void	gen_funcall(Node *node)
 	while (arg)
 	{
 		gen_expr(arg);
+		printf("  mov %s, rax\n", argreg[nargs]);
 		nargs++;
 		arg = arg->next;
 	}
-	i = nargs - 1;
-	while (i >= 0)
-	{
-		printf("  pop %s\n", argreg[i]);
-		i--;
-	}
 	printf("  call %s\n", node->funcname);
-	printf("  push rax\n");
 
 }
 
@@ -304,23 +296,20 @@ static void	gen_expr(Node *node)
 	if (node->kind == ND_NUM)
 	{
 		printf("  push %d\n", node->val);
+		printf("  pop rax\n");
 		return ;
 	}
 	if (node->kind == ND_NEG)
 	{
 		gen_expr(node->lhs);
-		printf("  pop rax\n");
 		printf("  neg rax\n");
-		printf("  push rax\n");
 		return ;
 	}
 	else if (node->kind == ND_LVAR)
 	{
 		printf("# local variable\n");
 		gen_lval(node);
-		printf("  pop rax\n");
 		printf("  mov rax, [rax]\n");
-		printf("  push rax\n");
 		return ;
 	}
 	else if (node->kind == ND_ASSIGN)
@@ -331,12 +320,11 @@ static void	gen_expr(Node *node)
 			gen_expr(node->lhs->lhs);
 		else
 			gen_lval(node->lhs);
+		push();
 		printf("# assign rhs\n");
 		gen_expr(node->rhs);
-		printf("  pop rdi # rvalue\n");
-		printf("  pop rax # lvalue\n");
-		printf("  mov [rax], rdi # lvalue = rvalue\n");
-		printf("  push rdi\n");
+		pop("rdi");
+		printf("  mov [rdi], rax # lvalue = rvalue\n");
 		return ;
 	}
 	else if (node->kind == ND_FUNC_CALL)
@@ -348,9 +336,7 @@ static void	gen_expr(Node *node)
 	else if (node->kind == ND_DEREF)
 	{
 		gen_expr(node->lhs);
-		printf("  pop rax\n");
 		printf("  mov rax, [rax]\n");
-		printf("  push rax\n");
 	}
 	else if (node->lhs && node->rhs)
 		gen_binary_expr(node);
