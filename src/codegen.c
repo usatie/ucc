@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/12/06 02:15:25 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/06 13:25:31 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,10 +104,16 @@ static void	gen_block(Node *node)
 	}
 }
 
+static int	count(void)
+{
+	static int	i = 1;
+
+	return (i++);
+}
+
 static void	gen_stmt(Node *node)
 {
-	static int	label;
-	const int	label_at_gen = label;
+	const int	c = count();
 
 	if (node->kind == ND_RETURN_STMT)
 	{
@@ -124,51 +130,48 @@ static void	gen_stmt(Node *node)
 	}
 	if (node->kind == ND_IF_STMT)
 	{
-		label++;
 		gen_expr(node->cond);
 		printf("  cmp rax, 0\n");
-		printf("  je .Lelse%d\n", label_at_gen);
+		printf("  je .Lelse%d\n", c);
 		gen_stmt(node->then);
-		printf("  jmp .Lend%d\n", label_at_gen);
-		printf(".Lelse%d:\n", label_at_gen);
+		printf("  jmp .Lend%d\n", c);
+		printf(".Lelse%d:\n", c);
 		if (node->els)
 			gen_stmt(node->els);
-		printf(".Lend%d:\n", label_at_gen);
+		printf(".Lend%d:\n", c);
 		return ;
 	}
 	if (node->kind == ND_WHILE_STMT)
 	{
-		label++;
-		printf(".Lstart%d:\n", label_at_gen);
+		printf(".Lstart%d:\n", c);
 		gen_expr(node->cond);
 		printf("  cmp rax, 0\n");
-		printf("  je .Lend%d\n", label_at_gen);
+		printf("  je .Lend%d\n", c);
 		gen_stmt(node->then);
-		printf("  jmp .Lstart%d\n", label_at_gen);
-		printf(".Lend%d:\n", label_at_gen);
+		printf("  jmp .Lstart%d\n", c);
+		printf(".Lend%d:\n", c);
 		return ;
 	}
 	if (node->kind == ND_FOR_STMT)
 	{
-		label++;
 		printf("# for.init\n");
 		if (node->init)
 			gen_expr(node->init);
-		printf(".Lstart%d:\n", label_at_gen);
+		printf(".Lstart%d:\n", c);
 		printf("# for.cond\n");
 		if (node->cond)
 		{
 			gen_expr(node->cond);
 			printf("  cmp rax, 0\n");
-			printf("  je .Lend%d\n", label_at_gen);
+			printf("  je .Lend%d\n", c);
 		}
 		printf("# for.then\n");
 		gen_stmt(node->then);
 		printf("# for.inc\n");
 		if (node->inc)
 			gen_expr(node->inc);
-		printf("  jmp .Lstart%d\n", label_at_gen);
-		printf(".Lend%d:\n", label_at_gen);
+		printf("  jmp .Lstart%d\n", c);
+		printf(".Lend%d:\n", c);
 		return ;
 	}
 	if (node->kind == ND_BLOCK)
