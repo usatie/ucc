@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/05 23:57:23 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/06 11:36:17 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -424,10 +424,22 @@ static Node	*new_add(Node *lhs, Node *rhs, Token *tok)
 	// num + num
 	if (is_integer(lhs->ty) && is_integer(rhs->ty))
 		return new_node_binary(ND_ADD, lhs, rhs, tok);
+	// ptr + ptr is invalid
+	if (lhs->ty->ptr_to && rhs->ty->ptr_to)
+		error_tok(tok, "Invalid operands");
+	// num + ptr -> ptr + num
+	if (lhs->ty->ptr_to == NULL && rhs->ty->ptr_to)
+	{
+		Node	*tmp = lhs;
+		lhs = rhs;
+		rhs = tmp;
+	}
+	// ptr + num
+	rhs = new_node_binary(ND_MUL, rhs, new_node_num(8, tok), tok);
 	return new_node_binary(ND_ADD, lhs, rhs, tok);
-	error_tok(tok, "Invalid operands");
 }
 
+// `-` is overloaded for the pointer type.
 static Node	*new_sub(Node *lhs, Node *rhs, Token *tok)
 {
 	add_type(lhs);
@@ -435,7 +447,22 @@ static Node	*new_sub(Node *lhs, Node *rhs, Token *tok)
 	// num - num
 	if (is_integer(lhs->ty) && is_integer(rhs->ty))
 		return new_node_binary(ND_SUB, lhs, rhs, tok);
-	return new_node_binary(ND_SUB, lhs, rhs, tok);
+	// ptr - num
+	if (lhs->ty->ptr_to && rhs->ty->ptr_to == NULL)
+	{
+		rhs = new_node_binary(ND_MUL, rhs, new_node_num(8, tok), tok);
+		add_type(rhs);
+		Node	*node = new_node_binary(ND_SUB, lhs, rhs, tok);
+		node->ty = lhs->ty;
+		return node;
+	}
+	// ptr - ptr, which means how many elements are between the two.
+	if (lhs->ty->ptr_to && rhs->ty->ptr_to)
+	{
+		Node	*node = new_node_binary(ND_SUB, lhs, rhs, tok);
+		node->ty = ty_int;
+		return new_node_binary(ND_DIV, node, new_node_num(8, tok), tok);
+	}
 	error_tok(tok, "Invalid operands");
 }
 

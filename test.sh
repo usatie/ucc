@@ -27,10 +27,11 @@ assert() {
 # asserterror "int main() { int a; int b; b = a; }"
 
 # ptr arithmetic
-assert 42 "int main() { int a; int b; int *p; a = 1; b = 2; p = &b; p = p + 8; *p = 42; return a; }"
-assert 2 "int main() { int a; int b; int *p; a = 1; b = 2; p = &b; p = p + 8; *p = 42; return b; }"
-assert 1 "int main() { int a; int b; int *p; a = 1; b = 2; p = &a; p = p - 8; *p = 42; return a; }"
-assert 42 "int main() { int a; int b; int *p; a = 1; b = 2; p = &a; p = p - 8; *p = 42; return b; }"
+assert 42 "int main() { int a; int b; int *p; a = 1; b = 2; p = &b; p = p + 1; *p = 42; return a; }"
+assert 2 "int main() { int a; int b; int *p; a = 1; b = 2; p = &b; p = p + 1; *p = 42; return b; }"
+assert 1 "int main() { int a; int b; int *p; a = 1; b = 2; p = &a; p = p - 1; *p = 42; return a; }"
+assert 42 "int main() { int a; int b; int *p; a = 1; b = 2; p = &a; p = p - 1; *p = 42; return b; }"
+assert 42 "int main() { int a; int b; int c; int *p; a = 1; b = 2; c = 3; p = &c; p = p + 2; *p = 42; return a; }"
 
 # ptr to ptr to .... to int
 assert 42 "int main() { int a; int *ap; int **app; ap = &a; app = &ap; a = 1; *ap = 2; **app = 42; return a; }"
@@ -47,7 +48,7 @@ assert 1 "int main() { int a; int b; return foo(); } int foo(){ int b; int a; a 
 assert 42  "int main() { int a; a = 42; return *(&a); }"
 assert 42  "int main() { int a; int *b; a = 42; b = &a; return *b; }"
 assert 21  "int main() { int a; int b; a = 42; b = 21; return *(&b); }"
-assert 42  "int main() { int a; int b; a = 42; b = 21; return *(&b + 8); }"
+assert 42  "int main() { int a; int b; a = 42; b = 21; return *(&b + 1); }"
 
 # function declare with args
 assert 6   "int main() { add3(1, 2, 3); } int add3(int a, int b, int c) { return a + b + c; }"

@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 06:52:32 by susami            #+#    #+#             */
-/*   Updated: 2022/12/05 23:56:24 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/06 12:06:41 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,9 +49,11 @@ void	add_type(Node *node)
 	case ND_LTE:
 	case ND_GT:
 	case ND_GTE:
-	case ND_LVAR:
 	case ND_NUM:
 		node->ty = ty_int;
+		return ;
+	case ND_LVAR:
+		node->ty = node->lvar->type;
 		return ;
 	case ND_ADDR:
 		node->ty = ptr_to(node->lhs->ty);
@@ -64,6 +66,17 @@ void	add_type(Node *node)
 		return ;
 	case ND_FUNC_CALL:
 		node->ty = ty_int;
+		return ;
+	case ND_RETURN_STMT:
+		node->ty = node->lhs->ty;
+		return ;
+	case ND_IF_STMT:
+	case ND_FOR_STMT:
+	case ND_EXPR_STMT:
+	case ND_WHILE_STMT:
+	case ND_FUNC_DECL:
+	case ND_BLOCK:
+		return ;
 	}
 }
 
