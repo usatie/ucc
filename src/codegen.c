@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/12/07 16:36:18 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/07 19:11:18 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ static void	assign_lvar_offset(Function *prog)
 	offset = 0;
 	for (LVar *var = prog->locals; var; var = var->next)
 	{
-		offset += 8;
+		offset += var->type->size;
 		var->offset = offset;
 	}
 	prog->stack_size = align_to(offset, 16);

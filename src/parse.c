@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/07 16:29:04 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/07 20:39:18 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -440,7 +440,7 @@ static Node	*new_add(Node *lhs, Node *rhs, Token *tok)
 		rhs = tmp;
 	}
 	// ptr + num
-	rhs = new_node_binary(ND_MUL, rhs, new_node_num(8, tok), tok);
+	rhs = new_node_binary(ND_MUL, rhs, new_node_num(rhs->ty->size, tok), tok);
 	return new_node_binary(ND_ADD, lhs, rhs, tok);
 }
 
@@ -455,7 +455,7 @@ static Node	*new_sub(Node *lhs, Node *rhs, Token *tok)
 	// ptr - num
 	if (lhs->ty->ptr_to && rhs->ty->ptr_to == NULL)
 	{
-		rhs = new_node_binary(ND_MUL, rhs, new_node_num(8, tok), tok);
+		rhs = new_node_binary(ND_MUL, rhs, new_node_num(rhs->ty->size, tok), tok);
 		add_type(rhs);
 		Node	*node = new_node_binary(ND_SUB, lhs, rhs, tok);
 		node->ty = lhs->ty;
@@ -466,7 +466,7 @@ static Node	*new_sub(Node *lhs, Node *rhs, Token *tok)
 	{
 		Node	*node = new_node_binary(ND_SUB, lhs, rhs, tok);
 		node->ty = ty_int;
-		return new_node_binary(ND_DIV, node, new_node_num(8, tok), tok);
+		return new_node_binary(ND_DIV, node, new_node_num(rhs->ty->size, tok), tok);
 	}
 	error_tok(tok, "Invalid operands");
 }

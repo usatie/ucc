@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/12/07 16:30:28 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/07 19:11:02 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ typedef enum {
 struct Type {
 	TypeKind	kind;
 	Type		*ptr_to;
+	int			size;
 };
 
 typedef struct LVar		LVar;

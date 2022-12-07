@@ -6,14 +6,14 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 06:52:32 by susami            #+#    #+#             */
-/*   Updated: 2022/12/06 12:06:41 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/07 21:00:03 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include "ucc.h"
 
-Type	*ty_int = &(Type){TY_INT, NULL};
+Type	*ty_int = &(Type){TY_INT, NULL, 8};
 
 bool	is_integer(Type *ty)
 {
@@ -87,5 +87,6 @@ Type	*ptr_to(Type *type)
 	new_type = calloc(sizeof(Type), 1);
 	new_type->kind = TY_PTR;
 	new_type->ptr_to = type;
+	new_type->size = 8;
 	return (new_type);
 }
