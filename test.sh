@@ -1,10 +1,12 @@
 #!/bin/bash
 cat <<EOF | gcc -xc -c -o tmp2.o -
+#include <stdlib.h>
 int ret_ft() { return 42; }
 int ret_three() { return 3; }
 int	add(int a, int b) { return a + b; }
 int	mul(int a, int b) { return a * b; }
 int	add6(int a, int b, int c, int d, int e, int f) { return a + b + c + d + e + f; }
+void alloc4(int **p, int n1, int n2, int n3, int n4) { *p = malloc(sizeof(int) * 4); (*p)[0] = n1; (*p)[1] = n2; (*p)[2] = n3; (*p)[3] = n4; }
 EOF
 assert() {
 	expected="$1"
@@ -25,6 +27,23 @@ assert() {
 
 # invalid type error
 # asserterror "int main() { int a; int b; b = a; }"
+
+# int size to 4
+assert  4 "int main() { int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 2; return *q; }"
+assert  8 "int main() { int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 3; return *q; }"
+
+assert  1 "int main() { return f(1, 2, 3); } int f(int a, int b, int c) { return a; }"
+assert  2 "int main() { return f(1, 2, 3); } int f(int a, int b, int c) { return b; }"
+assert  3 "int main() { return f(1, 2, 3); } int f(int a, int b, int c) { return c; }"
+assert  3 "int main() { return f(1, 2, 3); } int f(int a, int b, int c) { return a + b; }"
+assert  6 "int main() { return f(1, 2, 3); } int f(int a, int b, int c) { return a + b + c; }"
+
+assert  1 "int main() { int a; int b; int c; a = 1; b = 2; c = 3; return a; }"
+assert  2 "int main() { int a; int b; int c; a = 1; b = 2; c = 3; return b; }"
+assert  3 "int main() { int a; int b; int c; a = 1; b = 2; c = 3; return c; }"
+assert  1 "int main() { int a; int b; int c; a = 1; b = 2; c = 3; *(&b) = 42; return a; }"
+assert 42 "int main() { int a; int b; int c; a = 1; b = 2; c = 3; *(&b) = 42; return b; }"
+assert  3 "int main() { int a; int b; int c; a = 1; b = 2; c = 3; *(&b) = 42; return c; }"
 
 # function with many lvars
 assert 1 "int main() { return f(1, 2, 3); } int f(int a, int b, int c) { int d; int e; int f; int g; int h; int i; return a; }"

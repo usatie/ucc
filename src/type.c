@@ -6,14 +6,14 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 06:52:32 by susami            #+#    #+#             */
-/*   Updated: 2022/12/07 21:00:03 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/07 22:41:22 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include "ucc.h"
 
-Type	*ty_int = &(Type){TY_INT, NULL, 8};
+Type	*ty_int = &(Type){TY_INT, NULL, 4};
 
 bool	is_integer(Type *ty)
 {
@@ -32,6 +32,8 @@ void	add_type(Node *node)
 	add_type(node->init);
 	add_type(node->inc);
 	for (Node *n = node->body; n; n = n->next)
+		add_type(n);
+	for (Node *n = node->args; n; n = n->next)
 		add_type(n);
 	switch (node->kind)
 	{

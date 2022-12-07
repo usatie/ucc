@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/12/07 19:11:18 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/08 00:22:50 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,8 @@ static void	gen_func(Function *func);
 static void	gen_block(Node *node);
 static void	gen_stmt(Node *node);
 static void	gen_expr(Node *node);
-static char	*argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+static char	*argreg64[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+static char	*argreg32[] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
 
 // codegen.c
 void	codegen(Function *func)
@@ -48,6 +49,23 @@ static void	pop(char *arg)
 	depth--;
 }
 
+static void	load(Type *ty)
+{
+	if (ty->size == 4)
+		printf("  movsxd rax, [rax]\n");
+	else if (ty->size == 8)
+		printf("  mov rax, [rax]\n");
+}
+
+static void	store(Type *ty)
+{
+	pop("rdi");
+	if (ty->size == 4)
+		printf("  mov [rdi], eax\n");
+	else if (ty->size == 8)
+		printf("  mov [rdi], rax\n");
+}
+
 static void	setup_args(Function *func)
 {
 	LVar	*arg;
@@ -60,7 +78,12 @@ static void	setup_args(Function *func)
 	{
 		printf("  mov rax, rbp\n");
 		printf("  sub rax, %d\n", arg->offset);
-		printf("  mov [rax], %s\n", argreg[i]);
+		if (arg->type->size == 8)
+			printf("  mov [rax], %s\n", argreg64[i]);
+		else if (arg->type->size == 4)
+			printf("  mov [rax], %s\n", argreg32[i]);
+		else
+			error("Unknown type size");
 		i++;
 		arg = arg->next;
 	}
@@ -311,7 +334,7 @@ static void	gen_funcall(Node *node)
 	while (arg)
 	{
 		gen_expr(arg);
-		printf("  mov %s, rax\n", argreg[i]);
+		printf("  mov %s, rax\n", argreg64[i]);
 		i++;
 		arg = arg->next;
 	}
@@ -337,7 +360,7 @@ static void	gen_expr(Node *node)
 	{
 		printf("# local variable\n");
 		gen_lval(node);
-		printf("  mov rax, [rax]\n");
+		load(node->ty);
 		return ;
 	}
 	else if (node->kind == ND_ASSIGN)
@@ -351,8 +374,7 @@ static void	gen_expr(Node *node)
 		push();
 		printf("# assign rhs\n");
 		gen_expr(node->rhs);
-		pop("rdi");
-		printf("  mov [rdi], rax # lvalue = rvalue\n");
+		store(node->ty);
 		return ;
 	}
 	else if (node->kind == ND_FUNC_CALL)
@@ -364,7 +386,7 @@ static void	gen_expr(Node *node)
 	else if (node->kind == ND_DEREF)
 	{
 		gen_expr(node->lhs);
-		printf("  mov rax, [rax]\n");
+		load(node->ty);
 	}
 	else if (node->lhs && node->rhs)
 		gen_binary_expr(node);
