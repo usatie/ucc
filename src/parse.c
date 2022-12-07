@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/07 14:55:23 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/07 16:29:04 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,6 +219,7 @@ Function	*funcdecl(Token **rest, Token *tok)
 		tok = skip_op(tok, "int");
 		skip_kind(tok, TK_IDENT);
 		new_lvar(tok, ty_int);
+		func->nargs++;
 		tok = tok->next;
 	}
 	while (!isequal(tok, ")"))
@@ -227,6 +228,7 @@ Function	*funcdecl(Token **rest, Token *tok)
 		tok = skip_op(tok, "int");
 		skip_kind(tok, TK_IDENT);
 		new_lvar(tok, ty_int);
+		func->nargs++;
 		tok = tok->next;
 	}
 	tok = skip_op(tok, ")");

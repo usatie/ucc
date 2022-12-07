@@ -26,6 +26,11 @@ assert() {
 # invalid type error
 # asserterror "int main() { int a; int b; b = a; }"
 
+# function with many lvars
+assert 1 "int main() { return f(1, 2, 3); } int f(int a, int b, int c) { int d; int e; int f; int g; int h; int i; return a; }"
+assert 2 "int main() { return f(1, 2, 3); } int f(int a, int b, int c) { int d; int e; int f; int g; int h; int i; return b; }"
+assert 3 "int main() { return f(1, 2, 3); } int f(int a, int b, int c) { int d; int e; int f; int g; int h; int i; return c; }"
+
 # ptr arithmetic
 assert 42 "int main() { int a; int b; int *p; a = 1; b = 2; p = &b; p = p + 1; *p = 42; return a; }"
 assert 2 "int main() { int a; int b; int *p; a = 1; b = 2; p = &b; p = p + 1; *p = 42; return b; }"

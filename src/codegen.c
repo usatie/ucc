@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/12/07 14:49:21 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/07 16:36:18 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,13 +51,17 @@ static void	pop(char *arg)
 static void	setup_args(Function *func)
 {
 	LVar	*arg;
+	int		i;
 
 	arg = func->args;
-	while (arg)
+	i = 0;
+	arg = func->args;
+	while (i < func->nargs)
 	{
 		printf("  mov rax, rbp\n");
 		printf("  sub rax, %d\n", arg->offset);
-		printf("  mov [rax], %s\n", argreg[(arg->offset / 8) - 1]);
+		printf("  mov [rax], %s\n", argreg[i]);
+		i++;
 		arg = arg->next;
 	}
 	/*
@@ -297,18 +301,18 @@ static void	gen_binary_expr(Node *node)
 
 static void	gen_funcall(Node *node)
 {
-	int		nargs;
+	int		i;
 	Node	*arg;
 
-	nargs = 0;
+	i = 0;
 	printf("# TODO: allign sp to 16\n");
 	printf("# func call\n");
 	arg = node->args;
 	while (arg)
 	{
 		gen_expr(arg);
-		printf("  mov %s, rax\n", argreg[nargs]);
-		nargs++;
+		printf("  mov %s, rax\n", argreg[i]);
+		i++;
 		arg = arg->next;
 	}
 	printf("  call %s\n", node->funcname);
