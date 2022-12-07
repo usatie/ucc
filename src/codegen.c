@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/12/06 13:25:31 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/07 14:49:21 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,11 +15,11 @@
 
 int			depth = 0;
 
+static void	assign_lvar_offset(Function *prog);
 static void	gen_func(Function *func);
 static void	gen_block(Node *node);
 static void	gen_stmt(Node *node);
 static void	gen_expr(Node *node);
-static int	stack_size(void);
 static char	*argreg[] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
 
 // codegen.c
@@ -29,6 +29,8 @@ void	codegen(Function *func)
 	printf(".intel_syntax noprefix\n");
 	while (func)
 	{
+		printf("# %s\n", func->name);
+		assign_lvar_offset(func);
 		gen_func(func);
 		func = func->next;
 	}
@@ -68,6 +70,25 @@ static void	setup_args(Function *func)
 	*/
 }
 
+// Round up `n` to the nearest multiple of `align`. For instance,
+// align_to(5, 8) returns 8 and align_to(11, 8) returns 16.
+static int align_to(int n, int align) {
+  return (n + align - 1) / align * align;
+}
+
+static void	assign_lvar_offset(Function *prog)
+{
+	int	offset;
+
+	offset = 0;
+	for (LVar *var = prog->locals; var; var = var->next)
+	{
+		offset += 8;
+		var->offset = offset;
+	}
+	prog->stack_size = align_to(offset, 16);
+}
+
 static void	gen_func(Function *func)
 {
 	printf(".globl %s\n", func->name);
@@ -80,7 +101,7 @@ static void	gen_func(Function *func)
 	// Allocate local variables
 	printf("# Allocate local variables\n");
 	printf("  push rbp\n");
-	printf("  sub rsp, %d\n", stack_size());
+	printf("  sub rsp, %d\n", func->stack_size);
 	// Setup args
 	setup_args(func);
 
@@ -345,11 +366,4 @@ static void	gen_expr(Node *node)
 		gen_binary_expr(node);
 	else
 		error_tok(node->tok, "Invalid expression node\n");
-}
-
-static int	stack_size(void)
-{
-	if (ctx.lvars == NULL)
-		return (0);
-	return (ctx.lvars->offset);
 }

@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/06 11:36:17 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/07 14:55:23 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,15 +122,18 @@ static LVar	*new_lvar(const Token *tok, Type *ty)
 	else
 	{
 		lvar = calloc(1, sizeof(LVar));
-		lvar->next = ctx.lvars;
 		lvar->name = tok->str;
 		lvar->len = tok->len;
 		lvar->type = ty;
 		if (ctx.lvars == NULL)
-			lvar->offset = 8;
+			ctx.lvars = lvar;
 		else
-			lvar->offset = ctx.lvars->offset + 8;
-		ctx.lvars = lvar;
+		{
+			LVar *last = ctx.lvars;
+			while (last && last->next)
+				last = last->next;
+			last->next = lvar;
+		}
 	}
 	return (lvar);
 }

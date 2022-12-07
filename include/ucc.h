@@ -6,14 +6,15 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/12/05 23:41:06 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/07 13:34:30 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef UCC_H
 # define UCC_H
 
-#include <stdbool.h>
+# include <stdbool.h>
+# include <stddef.h>
 
 typedef enum {
 	TK_PUNCT, // Punctuators
