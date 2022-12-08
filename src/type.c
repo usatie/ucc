@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 06:52:32 by susami            #+#    #+#             */
-/*   Updated: 2022/12/07 22:41:22 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/08 13:56:33 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,5 +90,17 @@ Type	*ptr_to(Type *type)
 	new_type->kind = TY_PTR;
 	new_type->ptr_to = type;
 	new_type->size = 8;
+	return (new_type);
+}
+
+Type	*ary_of(Type *type, size_t array_size)
+{
+	Type	*new_type;
+
+	new_type = calloc(sizeof(Type), 1);
+	new_type->kind = TY_ARRAY;
+	new_type->ptr_to = type;
+	new_type->size = type->size * array_size;
+	new_type->array_size = array_size;
 	return (new_type);
 }

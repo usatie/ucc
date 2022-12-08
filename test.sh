@@ -28,6 +28,11 @@ assert() {
 # invalid type error
 # asserterror "int main() { int a; int b; b = a; }"
 
+# array
+assert 16 "int main() { int arr[4]; return sizeof(arr); }"
+assert 48 "int main() { int arr[3][4]; return sizeof(arr); }"
+assert 96 "int main() { int arr[2][3][4]; return sizeof(arr); }"
+
 # sizeof
 assert  4 "int main() { int x; return sizeof(x); }"
 assert  4 "int main() { int x; return sizeof x; }"

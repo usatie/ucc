@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/08 13:34:23 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/08 13:59:27 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,16 +213,26 @@ Type	*declspec(Token **rest, Token *tok)
 	return (type);
 }
 
-// vardecl = declspec ident
+#include <stdio.h>
+// vardecl = declspec ident ("[" num "]")*
 Node	*vardecl(Token **rest, Token *tok)
 {
 	Node	*node;
 	Type	*type;
+	LVar	*lvar;
 
 	node = new_node(ND_BLOCK, tok); // this is empty block
 	type = declspec(&tok, tok);
-	new_lvar(tok, type); // this is only for allocate local variable
-	*rest = tok->next;
+	lvar = new_lvar(tok, type); // this is only for allocate local variable
+	tok = skip_kind(tok, TK_IDENT);
+	while (consume_op(&tok, tok, "["))
+	{
+		type = ary_of(type, tok->val);
+		tok = skip_kind(tok, TK_NUM);
+		tok = skip_op(tok, "]");
+	}
+	lvar->type = type;
+	*rest = tok;
 	return (node);
 }
 

@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/12/08 12:38:21 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/08 13:57:07 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,12 +38,14 @@ typedef struct Type		Type;
 typedef enum {
 	TY_INT,
 	TY_PTR,
+	TY_ARRAY,
 }	TypeKind;
 
 struct Type {
 	TypeKind	kind;
 	Type		*ptr_to;
 	int			size;
+	size_t		array_size;
 };
 
 typedef struct LVar		LVar;
@@ -147,6 +149,7 @@ Token		*tokenize(char *p);
 bool		is_integer(Type *ty);
 void		add_type(Node *node);
 Type		*ptr_to(Type *type);
+Type		*ary_of(Type *type, size_t array_size);
 
 // parser.c
 // syntax parser
