@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/08 17:33:50 by susami            #+#    #+#             */
-/*   Updated: 2022/12/07 19:11:02 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/08 12:38:21 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 
 typedef enum {
 	TK_PUNCT, // Punctuators
+	TK_SIZEOF, // sizeof()
 	TK_KEYWORD, // Keywords
 	TK_IDENT, // Identifiers
 	TK_NUM, // Numeric literals

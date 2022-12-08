@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 12:01:38 by susami            #+#    #+#             */
-/*   Updated: 2022/11/23 18:21:36 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/08 12:05:54 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,8 @@ static void	covnert_keywords(Token *tok)
 	{
 		if (t->kind == TK_IDENT && is_keyword(t->str))
 			t->kind = TK_KEYWORD;
+		if (is_match_keyword(t->str, "sizeof"))
+			t->kind = TK_SIZEOF;
 		t = t->next;
 	}
 }

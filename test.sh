@@ -28,6 +28,15 @@ assert() {
 # invalid type error
 # asserterror "int main() { int a; int b; b = a; }"
 
+# sizeof
+assert  4 "int main() { int x; return sizeof(x); }"
+assert  4 "int main() { int x; return sizeof x; }"
+assert  8 "int main() { int *x; return sizeof x; }"
+assert  8 "int main() { int x; return sizeof(&x); }"
+assert  8 "int main() { int x; return sizeof(&x + 1); }"
+assert  4 'int main() { int x=1; return sizeof(x=2); }'
+assert  1 'int main() { int x=1; sizeof(x=2); return x; }' # expression will not be evaluated. Only type of the expression matters.
+
 # int size to 4
 assert  4 "int main() { int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 2; return *q; }"
 assert  8 "int main() { int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 3; return *q; }"

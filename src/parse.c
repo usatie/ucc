@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/07 20:39:18 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/08 12:39:09 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -584,6 +584,7 @@ Node	*funcall(Token **rest, Token *tok)
 //         | funcall
 //         | ident
 //         | "(" expr ")"
+//         | "sizeof" primary
 Node	*primary(Token **rest, Token *tok)
 {
 	Node	*node;
@@ -599,6 +600,12 @@ Node	*primary(Token **rest, Token *tok)
 		node = new_node_num(tok->val, tok);
 		*rest = tok->next;
 		return (node);
+	}
+	if (tok->kind == TK_SIZEOF)
+	{
+		node = unary(rest, tok->next);
+		add_type(node);
+		return new_node_num(node->ty->size, tok);
 	}
 	if (tok->kind == TK_IDENT)
 	{
