@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/08 13:59:27 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/08 15:43:34 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -617,12 +617,19 @@ Node	*primary(Token **rest, Token *tok)
 	}
 	if (tok->kind == TK_IDENT)
 	{
+		Token	*ident = tok;
 		// Function call
-		if (isequal(tok->next, "("))
-			return (funcall(rest, tok));
+		if (consume_op(&tok, ident->next, "("))
+			return (funcall(rest, ident));
+		if (consume_op(&tok, ident->next, "["))
+		{
+			node = new_add(new_node_lvar(ident), primary(&tok, tok), ident);
+			*rest = skip_op(tok, "]");
+			return (new_node_unary(ND_DEREF, node, ident));
+		}
 		// Variable
-		*rest = tok->next;
-		return (new_node_lvar(tok));
+		*rest = ident->next;
+		return (new_node_lvar(ident));
 	}
 	error_tok(tok, "Invalid token.");
 }

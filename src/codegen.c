@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:32:05 by susami            #+#    #+#             */
-/*   Updated: 2022/12/08 00:22:50 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/08 15:45:33 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,16 @@ static void	pop(char *arg)
 
 static void	load(Type *ty)
 {
+	if (ty->kind == TY_ARRAY)
+	{
+		// If it is an array, do not attempt to load a value to the
+		// register because in general we can't load an entire array to a
+		// register. As a result, the result of an evaluation of an array
+		// becomes not the array itself but the address of the array.
+		// This is where "array is automatically converted to a pointer to
+		// the first element of the array in C" occurs.
+		return ;
+	}
 	if (ty->size == 4)
 		printf("  movsxd rax, [rax]\n");
 	else if (ty->size == 8)

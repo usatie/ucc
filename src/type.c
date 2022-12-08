@@ -6,14 +6,14 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/12/02 06:52:32 by susami            #+#    #+#             */
-/*   Updated: 2022/12/08 13:56:33 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/08 15:49:34 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <stdlib.h>
 #include "ucc.h"
 
-Type	*ty_int = &(Type){TY_INT, NULL, 4};
+Type	*ty_int = &(Type){TY_INT, NULL, 4, 0};
 
 bool	is_integer(Type *ty)
 {
@@ -41,8 +41,12 @@ void	add_type(Node *node)
 	case ND_SUB:
 	case ND_MUL:
 	case ND_DIV:
-	case ND_ASSIGN:
 	case ND_NEG:
+		node->ty = node->lhs->ty;
+		return ;
+	case ND_ASSIGN:
+		if (node->lhs->ty->kind == TY_ARRAY)
+			error_tok(node->lhs->tok, "not an lvalue");
 		node->ty = node->lhs->ty;
 		return ;
 	case ND_EQ:
@@ -58,13 +62,15 @@ void	add_type(Node *node)
 		node->ty = node->lvar->type;
 		return ;
 	case ND_ADDR:
-		node->ty = ptr_to(node->lhs->ty);
+		if (node->lhs->ty->kind == TY_ARRAY)
+			node->ty = ptr_to(node->lhs->ty->ptr_to);
+		else
+			node->ty = ptr_to(node->lhs->ty);
 		return ;
 	case ND_DEREF:
-		if (node->lhs->ty->kind == TY_PTR)
-			node->ty = node->lhs->ty->ptr_to;
-		else
-			node->ty = ty_int;
+		if (node->lhs->ty->ptr_to == NULL)
+			error_tok(node->lhs->tok, "invalid pointer dereference");
+		node->ty = node->lhs->ty->ptr_to;
 		return ;
 	case ND_FUNC_CALL:
 		node->ty = ty_int;

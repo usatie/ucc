@@ -29,6 +29,19 @@ assert() {
 # asserterror "int main() { int a; int b; b = a; }"
 
 # array
+assert 63 "int main() { int a[2]; *a = 21; *(a + 1) = 42; int *p; p = a; return *p + *(p + 1); }"
+assert 21 "int main() { int a[2]; *a = 21; *(a + 1) = 42; int *p; p = &a; return *p; }"
+
+assert 42 "int main() { int arr[4]; arr[0] = 42; arr[1] = 2; arr[2] = 3; arr[3] = 4; return *arr; }"
+assert  2 "int main() { int arr[4]; arr[0] = 42; arr[1] = 2; arr[2] = 3; arr[3] = 4; return *(arr+1); }"
+assert  3 "int main() { int arr[4]; arr[0] = 42; arr[1] = 2; arr[2] = 3; arr[3] = 4; return *(arr+2); }"
+assert  4 "int main() { int arr[4]; arr[0] = 42; arr[1] = 2; arr[2] = 3; arr[3] = 4; return *(arr+3); }"
+
+assert 42 "int main() { int arr[4]; arr[0] = 42; arr[1] = 2; arr[2] = 3; arr[3] = 4; return arr[0]; }"
+assert  2 "int main() { int arr[4]; arr[0] = 42; arr[1] = 2; arr[2] = 3; arr[3] = 4; return arr[1]; }"
+assert  3 "int main() { int arr[4]; arr[0] = 42; arr[1] = 2; arr[2] = 3; arr[3] = 4; return arr[2]; }"
+assert  4 "int main() { int arr[4]; arr[0] = 42; arr[1] = 2; arr[2] = 3; arr[3] = 4; return arr[3]; }"
+
 assert 16 "int main() { int arr[4]; return sizeof(arr); }"
 assert 48 "int main() { int arr[3][4]; return sizeof(arr); }"
 assert 96 "int main() { int arr[2][3][4]; return sizeof(arr); }"
