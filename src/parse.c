@@ -6,7 +6,7 @@
 /*   By: susami <susami@student.42tokyo.jp>         +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/11/10 11:28:47 by susami            #+#    #+#             */
-/*   Updated: 2022/12/08 12:39:09 by susami           ###   ########.fr       */
+/*   Updated: 2022/12/08 13:34:23 by susami           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,7 +158,7 @@ EBNF syntax
 (Exetnded Backus-Naur form)
 
 program      = funcdecl*
-funcdecl     = "int" "*"* ident "(" ( "int" ident )* ")" block
+funcdecl     = declspec ident "(" vardecl* ")" block
 block        = "{" stmt* "}"
 stmt         = expr-stmt
              | "int" "*"* ident ";"
@@ -200,36 +200,49 @@ Function	*parse(Token *tok)
 	return (head);
 }
 
-// funcdecl = "int" "*"* ident "(" ( "int" ident )* ")" block
+// declspec = "int" "*"*
+Type	*declspec(Token **rest, Token *tok)
+{
+	Type	*type;
+
+	tok = skip_op(tok, "int");
+	type = ty_int;
+	while (consume_op(&tok, tok, "*"))
+		type = ptr_to(type);
+	*rest = tok;
+	return (type);
+}
+
+// vardecl = declspec ident
+Node	*vardecl(Token **rest, Token *tok)
+{
+	Node	*node;
+	Type	*type;
+
+	node = new_node(ND_BLOCK, tok); // this is empty block
+	type = declspec(&tok, tok);
+	new_lvar(tok, type); // this is only for allocate local variable
+	*rest = tok->next;
+	return (node);
+}
+
+// funcdecl = declspec ident "(" vardecl? ("," vardecl)* ")" block
 Function	*funcdecl(Token **rest, Token *tok)
 {
 	Function	*func;
 
 	ctx.lvars = NULL;
-	tok = skip_op(tok, "int");
 	func = calloc(sizeof(Function), 1);
-	func->type = ty_int;
-	while (consume_op(&tok, tok, "*"))
-		func->type = ptr_to(func->type);
+	func->type = declspec(&tok, tok);
 	skip_kind(tok, TK_IDENT);
 	func->name = strndup(tok->str, tok->len);
 	tok = skip_op(tok->next, "(");
 	if (!isequal(tok, ")"))
 	{
-		tok = skip_op(tok, "int");
-		skip_kind(tok, TK_IDENT);
-		new_lvar(tok, ty_int);
-		func->nargs++;
-		tok = tok->next;
-	}
-	while (!isequal(tok, ")"))
-	{
-		tok = skip_op(tok, ",");
-		tok = skip_op(tok, "int");
-		skip_kind(tok, TK_IDENT);
-		new_lvar(tok, ty_int);
-		func->nargs++;
-		tok = tok->next;
+		do {
+			vardecl(&tok, tok);
+			func->nargs++;
+		} while (consume_op(&tok, tok, ","));
 	}
 	tok = skip_op(tok, ")");
 	func->args = ctx.lvars;
@@ -254,21 +267,6 @@ Node	*block(Token **rest, Token *tok)
 	}
 	node->body = head.next;
 	*rest = skip_op(tok, "}");
-	return (node);
-}
-
-Node	*declaration(Token **rest, Token *tok)
-{
-	Node	*node;
-	Type	*type;
-
-	node = new_node(ND_BLOCK, tok); // this is empty block
-	tok = skip_op(tok, "int");
-	type = ty_int;
-	while (consume_op(&tok, tok, "*"))
-		type = ptr_to(type);
-	new_lvar(tok, type); // this is only for allocate local variable
-	*rest = tok;
 	return (node);
 }
 
@@ -334,7 +332,7 @@ Node	*stmt(Token **rest, Token *tok)
 	else if (isequal(tok, "{"))
 		return (block(rest, tok));
 	else if (isequal(tok, "int"))
-		return (declaration(rest, tok));
+		return (vardecl(rest, tok));
 	else
 		return (expr_stmt(rest, tok));
 }
